@@ -85,6 +85,20 @@
         .day:hover { transform: scale(1.1); z-index: 2; border: 1px solid var(--accent); }
         .day.empty { background: transparent; cursor: default; }
 
+        /* --- NOVO: ANIMAÇÃO DE DESTAQUE (PULSO NEON) --- */
+        .pulsing-highlight {
+            border: 2px solid #fff !important;
+            box-shadow: 0 0 15px var(--c-pagamento);
+            animation: pulse-green 1.5s infinite;
+            z-index: 10;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 176, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 176, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 176, 80, 0); }
+        }
+
         /* CALCULADORA DE BOLETO */
         .calculator-box { border-left: 4px solid var(--c-pagamento); }
         .calc-title { font-size: 1.1rem; margin-bottom: 15px; color: var(--c-pagamento); text-transform: uppercase; font-weight: bold; }
@@ -230,9 +244,13 @@
             }
         };
 
+        // --- ESTADO GLOBAL ---
         let currentYear = 2026;
         let currentMonth = 0; 
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        
+        // Variável para armazenar a data destacada (busca)
+        let highlightedDate = null; 
 
         function renderCalendar(month, year) {
             const grid = document.getElementById('daysGrid');
@@ -244,10 +262,12 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+            // Espaços vazios
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(createCell('empty', ''));
             }
 
+            // Dias
             for (let day = 1; day <= daysInMonth; day++) {
                 const key = `${year}-${month}`;
                 let cssClass = '';
@@ -256,6 +276,15 @@
                     [cssClass, desc] = calendarData[key][day];
                 }
                 const cell = createCell(cssClass, day);
+                
+                // VERIFICA SE DEVE APLICAR O DESTAQUE (PULSO)
+                if (highlightedDate && 
+                    highlightedDate.day === day && 
+                    highlightedDate.month === month && 
+                    highlightedDate.year === year) {
+                    cell.classList.add('pulsing-highlight');
+                }
+
                 cell.onclick = () => showDetails(day, monthNames[month], desc || "Sem eventos", cssClass);
                 grid.appendChild(cell);
             }
@@ -282,7 +311,6 @@
             renderCalendar(currentMonth, currentYear);
         }
 
-        // --- CORREÇÃO: FUNÇÃO DE CÁLCULO SEGURA ---
         function calculatePaymentDate() {
             const inputDateStr = document.getElementById('billDate').value;
             const resultBox = document.getElementById('calcResult');
@@ -290,17 +318,21 @@
             const resultDateDisplay = document.getElementById('resultDateDisplay');
             const resultObsDisplay = document.getElementById('resultObsDisplay');
 
-            // 1. Validação de Campo Vazio
+            // Limpa destaque anterior
+            highlightedDate = null;
+
             if (!inputDateStr) {
                 showError("Por favor, selecione uma data completa.");
+                // Re-renderiza para limpar destaques antigos se houver erro
+                renderCalendar(currentMonth, currentYear); 
                 return;
             }
 
             const [y, m, d] = inputDateStr.split('-').map(Number);
             
-            // 2. Validação de Ano (Evita erros se o usuário digitar ano errado)
             if (y < 2026 || y > 2026) {
                 showError("No momento, só temos dados para o ano de 2026.");
+                renderCalendar(currentMonth, currentYear);
                 return;
             }
 
@@ -309,7 +341,6 @@
             let found = false;
             let daysBack = 0;
 
-            // Limpa estilos de erro
             resultBox.classList.remove('error');
             resultBox.classList.remove('show');
 
@@ -329,12 +360,14 @@
                         resultBox.classList.add('show');
                         found = true;
                         
-                        // Atualiza o calendário visual
-                        if(currentMonth !== curM || currentYear !== curY) {
-                            currentMonth = curM;
-                            currentYear = curY;
-                            renderCalendar(curM, curY);
-                        }
+                        // SALVA O DESTAQUE E ATUALIZA O CALENDÁRIO
+                        highlightedDate = { day: curD, month: curM, year: curY };
+                        
+                        // Força ir para o mês correto e redesenhar (aplicando o pulso)
+                        currentMonth = curM;
+                        currentYear = curY;
+                        renderCalendar(curM, curY);
+                        
                         break;
                     }
                 }
@@ -344,6 +377,7 @@
 
             if (!found) {
                 showError("Nenhuma data de pagamento encontrada próxima a este dia.");
+                renderCalendar(currentMonth, currentYear);
             }
         }
 
