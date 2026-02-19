@@ -14,7 +14,7 @@
             
             /* Cores Financeiras */
             --c-pagamento: #00b050;       
-            --c-ponto: #7030a0;           
+            --c-ponto: #7030a0;            
             --c-nf-mes: #7f7f7f;          
             --c-nf-pag: #fff200;          
             --c-justificativa: #b020a8;   
@@ -85,7 +85,7 @@
         .day:hover { transform: scale(1.1); z-index: 2; border: 1px solid var(--accent); }
         .day.empty { background: transparent; cursor: default; }
 
-        /* --- NOVO: ANIMAÇÃO DE DESTAQUE (PULSO NEON) --- */
+        /* ANIMAÇÃO DE DESTAQUE */
         .pulsing-highlight {
             border: 2px solid #fff !important;
             box-shadow: 0 0 15px var(--c-pagamento);
@@ -112,25 +112,48 @@
         }
         .date-input:focus { outline: none; border-color: var(--accent); }
 
+        .btn-check {
+            width: 100%; padding: 12px; background: var(--c-pagamento); color: white; border: none;
+            border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
+            margin-bottom: 15px;
+        }
+        .btn-check:hover { background: #00d662; }
+
+        /* NOVOS ESTILOS PARA A LISTA DE PARCELAS */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .calc-result {
             background: rgba(0, 176, 80, 0.1);
             padding: 15px; border-radius: 6px; text-align: center;
             display: none; 
-            margin-top: 15px;
+            border-left: 3px solid var(--c-pagamento);
         }
-        .calc-result.show { display: block; animation: fadeIn 0.5s; }
-        .calc-result.error { background: rgba(255, 0, 85, 0.1); }
+        
+        .calc-result.show { display: flex; flex-direction: column; animation: fadeIn 0.4s; }
+        .calc-result.error { background: rgba(255, 0, 85, 0.1); border-left-color: var(--c-orcamento); }
+        
+        .parcela-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+        
+        .parcela-numero { font-weight: bold; color: var(--accent); }
+        .vencimento-original { font-size: 0.8rem; }
+        
+        .result-date { font-size: 1.6rem; font-weight: bold; color: var(--c-pagamento); margin: 5px 0; }
         .calc-result.error .result-date { color: var(--c-orcamento); font-size: 1.2rem; }
         
-        .result-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
-        .result-date { font-size: 1.8rem; font-weight: bold; color: var(--c-pagamento); margin: 5px 0; }
-        .result-obs { font-size: 0.9rem; color: #e0e0e0; }
-        
-        .btn-check {
-            width: 100%; padding: 12px; background: var(--c-pagamento); color: white; border: none;
-            border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
-        }
-        .btn-check:hover { background: #00d662; }
+        .result-obs { font-size: 0.8rem; color: #e0e0e0; }
 
         /* CORES EVENTOS */
         .evt-pagamento { background-color: var(--c-pagamento); color: #fff; }
@@ -174,16 +197,29 @@
                 <div class="calc-title">Quando pagar meu boleto?</div>
                 
                 <div class="input-group">
-                    <label>Vencimento do Boleto:</label>
-                    <input type="date" id="billDate" class="date-input">
+                    <label>Data do Primeiro Vencimento:</label>
+                    <input type="date" id="billDate" class="date-input" onchange="handleInputChange()">
                 </div>
 
-                <button class="btn-check" onclick="calculatePaymentDate()">Calcular Melhor Dia</button>
+                <!-- NOVO: Seleção de Parcelas -->
+                <div class="input-group">
+                    <label>Quantidade de Parcelas:</label>
+                    <select id="installments" class="date-input" onchange="handleInputChange()">
+                        <option value="1">1x (À vista)</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                        <option value="5">5x</option>
+                        <option value="6">6x</option>
+                        <option value="12">12x</option>
+                    </select>
+                </div>
 
-                <div id="calcResult" class="calc-result">
-                    <div class="result-label" id="resultLabel">Pague no dia:</div>
-                    <div class="result-date" id="resultDateDisplay">--/--</div>
-                    <div class="result-obs" id="resultObsDisplay">...</div>
+                <button class="btn-check" onclick="calculatePaymentDate(true)">Calcular Melhor Dia</button>
+
+                <!-- NOVO: Container que vai receber os resultados dinâmicos -->
+                <div id="resultsContainer" class="results-container">
+                    <!-- Os resultados aparecerão aqui via JavaScript -->
                 </div>
             </div>
 
@@ -201,47 +237,16 @@
 
     <script>
         // --- BASE DE DADOS ---
+        // Adicionei mais alguns meses fictícios apenas para testar parcelas longas se precisar
         const calendarData = {
-            "2026-0": { 
-                7: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 8: ["evt-pagamento", "Pagamento"],
-                14: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 15: ["evt-pagamento", "Pagamento"],
-                20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"],
-                22: ["evt-pagamento", "Pagamento"], 23: ["evt-nf-mes", "Limite NF (Mês Atual)"],
-                28: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 29: ["evt-pagamento", "Pagamento"]
-            },
-            "2026-1": { 
-                4: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 5: ["evt-pagamento", "Pagamento"],
-                9: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 12: ["evt-pagamento", "Pagamento"],
-                16: ["evt-orcamento", "Limite Remanejamento"], 17: ["evt-ponto", "Fechamento do Ponto"],
-                19: ["evt-pagamento", "Pagamento"], 25: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 26: ["evt-pagamento", "Pagamento"]
-            },
-            "2026-2": { 
-                4: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 5: ["evt-pagamento", "Pagamento"],
-                11: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 12: ["evt-pagamento", "Pagamento"],
-                18: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 19: ["evt-pagamento", "Pagamento"],
-                20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"],
-                26: ["evt-pagamento", "Pagamento"], 31: ["evt-nf-pag", "Limite Envio NF (Pagamento)"]
-            },
-            "2026-3": { 
-                2: ["evt-pagamento", "Pagamento"], 6: ["evt-orcamento", "Limite Remanejamento"],
-                8: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 9: ["evt-pagamento", "Pagamento"],
-                14: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 16: ["evt-pagamento", "Pagamento"],
-                20: ["evt-ponto", "Fechamento do Ponto"], 22: ["evt-nf-pag", "Limite Envio NF (Pagamento)"],
-                23: ["evt-pagamento", "Pagamento"], 24: ["evt-nf-mes", "Limite NF Mês Atual"],
-                28: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 30: ["evt-pagamento", "Pagamento"]
-            },
-            "2026-4": { 
-                6: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 7: ["evt-pagamento", "Pagamento"],
-                13: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 14: ["evt-pagamento", "Pagamento"],
-                20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-nf-mes", "Limite NF Mês Atual"],
-                26: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 28: ["evt-pagamento", "Pagamento"]
-            },
-            "2026-5": { 
-                2: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 3: ["evt-pagamento", "Pagamento"],
-                10: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 11: ["evt-pagamento", "Pagamento"],
-                17: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 18: ["evt-pagamento", "Pagamento"],
-                20: ["evt-ponto", "Fechamento do Ponto"], 24: ["evt-nf-pag", "Limite Envio NF (Pagamento)"], 25: ["evt-pagamento", "Pagamento"]
-            }
+            "2026-0": { 7: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-nf-mes", "Limite NF (Mês Atual)"], 28: ["evt-nf-pag", "Limite Envio NF"], 29: ["evt-pagamento", "Pagamento"] },
+            "2026-1": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 16: ["evt-orcamento", "Limite Remanejamento"], 17: ["evt-ponto", "Fechamento do Ponto"], 19: ["evt-pagamento", "Pagamento"], 25: ["evt-nf-pag", "Limite Envio NF"], 26: ["evt-pagamento", "Pagamento"] },
+            "2026-2": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"], 31: ["evt-nf-pag", "Limite Envio NF"] },
+            "2026-3": { 2: ["evt-pagamento", "Pagamento"], 6: ["evt-orcamento", "Limite Remanejamento"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-nf-mes", "Limite NF Mês Atual"], 28: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
+            "2026-4": { 6: ["evt-nf-pag", "Limite Envio NF"], 7: ["evt-pagamento", "Pagamento"], 13: ["evt-nf-pag", "Limite Envio NF"], 14: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-nf-mes", "Limite NF Mês Atual"], 26: ["evt-nf-pag", "Limite Envio NF"], 28: ["evt-pagamento", "Pagamento"] },
+            "2026-5": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 10: ["evt-nf-pag", "Limite Envio NF"], 11: ["evt-pagamento", "Pagamento"], 17: ["evt-nf-pag", "Limite Envio NF"], 18: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 24: ["evt-nf-pag", "Limite Envio NF"], 25: ["evt-pagamento", "Pagamento"] },
+            "2026-6": { 1: ["evt-pagamento", "Pagamento"], 15: ["evt-pagamento", "Pagamento"], 28: ["evt-pagamento", "Pagamento"] }, // Dados fictícios extra para testes
+            "2026-7": { 5: ["evt-pagamento", "Pagamento"], 15: ["evt-pagamento", "Pagamento"], 25: ["evt-pagamento", "Pagamento"] }  // Dados fictícios extra para testes
         };
 
         // --- ESTADO GLOBAL ---
@@ -249,7 +254,6 @@
         let currentMonth = 0; 
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         
-        // Variável para armazenar a data destacada (busca)
         let highlightedDate = null; 
 
         function renderCalendar(month, year) {
@@ -262,12 +266,10 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Espaços vazios
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(createCell('empty', ''));
             }
 
-            // Dias
             for (let day = 1; day <= daysInMonth; day++) {
                 const key = `${year}-${month}`;
                 let cssClass = '';
@@ -277,11 +279,7 @@
                 }
                 const cell = createCell(cssClass, day);
                 
-                // VERIFICA SE DEVE APLICAR O DESTAQUE (PULSO)
-                if (highlightedDate && 
-                    highlightedDate.day === day && 
-                    highlightedDate.month === month && 
-                    highlightedDate.year === year) {
+                if (highlightedDate && highlightedDate.day === day && highlightedDate.month === month && highlightedDate.year === year) {
                     cell.classList.add('pulsing-highlight');
                 }
 
@@ -311,90 +309,162 @@
             renderCalendar(currentMonth, currentYear);
         }
 
-        function calculatePaymentDate() {
+        // --- NOVA FUNÇÃO: Lida com mudanças nos inputs em tempo real ---
+        function handleInputChange() {
             const inputDateStr = document.getElementById('billDate').value;
-            const resultBox = document.getElementById('calcResult');
-            const resultLabel = document.getElementById('resultLabel');
-            const resultDateDisplay = document.getElementById('resultDateDisplay');
-            const resultObsDisplay = document.getElementById('resultObsDisplay');
+            if (inputDateStr) {
+                calculatePaymentDate(false); // Calcula automaticamente se tiver data
+            } else {
+                drawPlaceholders(); // Apenas desenha as caixinhas vazias se não tiver data
+            }
+        }
 
-            // Limpa destaque anterior
+        // --- NOVA FUNÇÃO: Desenha as caixinhas aguardando dados ---
+        function drawPlaceholders() {
+            const qtdParcelas = parseInt(document.getElementById('installments').value);
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            highlightedDate = null; // Remove o destaque do calendário
+            renderCalendar(currentMonth, currentYear); // Atualiza o calendário sem destaque
+
+            for (let i = 0; i < qtdParcelas; i++) {
+                const card = document.createElement('div');
+                card.className = 'calc-result show';
+                card.style.opacity = '0.5'; // Deixa visualmente "apagado"
+                card.style.borderLeftColor = 'var(--text-muted)'; // Cor neutra
+                card.innerHTML = `
+                    <div class="parcela-header">
+                        <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
+                        <span class="vencimento-original">Vence em: --/--/----</span>
+                    </div>
+                    <div class="result-date" style="color: var(--text-muted)">--/--</div>
+                    <div class="result-obs">Aguardando cálculo...</div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        // --- FUNÇÃO AUXILIAR: Adiciona meses a uma data de forma segura ---
+        function adicionarMeses(dataOriginal, mesesParaAdicionar) {
+            let novaData = new Date(dataOriginal.getTime());
+            let mesDesejado = (novaData.getMonth() + mesesParaAdicionar) % 12;
+            novaData.setMonth(novaData.getMonth() + mesesParaAdicionar);
+            
+            // Correção para casos como 31/01 + 1 mês = 03/03 (o correto seria 28/02)
+            if (novaData.getMonth() !== mesDesejado && novaData.getMonth() !== (mesDesejado + 12) % 12) {
+                novaData.setDate(0); // Volta para o último dia do mês anterior
+            }
+            return novaData;
+        }
+
+        // --- FUNÇÃO PRINCIPAL ---
+        function calculatePaymentDate(fromButton = true) {
+            const inputDateStr = document.getElementById('billDate').value;
+            const qtdParcelas = parseInt(document.getElementById('installments').value);
+            const container = document.getElementById('resultsContainer');
+            
+            // Limpa resultados anteriores
+            container.innerHTML = '';
             highlightedDate = null;
 
             if (!inputDateStr) {
-                showError("Por favor, selecione uma data completa.");
-                // Re-renderiza para limpar destaques antigos se houver erro
-                renderCalendar(currentMonth, currentYear); 
+                if (fromButton) {
+                    container.innerHTML = `<div class="calc-result show error"><div class="result-date">Ops!</div><div class="result-obs">Por favor, selecione uma data completa.</div></div>`;
+                    renderCalendar(currentMonth, currentYear); 
+                } else {
+                    drawPlaceholders();
+                }
                 return;
             }
 
             const [y, m, d] = inputDateStr.split('-').map(Number);
-            
-            if (y < 2026 || y > 2026) {
-                showError("No momento, só temos dados para o ano de 2026.");
-                renderCalendar(currentMonth, currentYear);
-                return;
-            }
+            const dataInicial = new Date(y, m - 1, d);
 
-            let checkDate = new Date(y, m - 1, d);
-            const maxLookback = 45;
-            let found = false;
-            let daysBack = 0;
+            let primeiraDataEncontrada = null; // Para focar no calendário depois
 
-            resultBox.classList.remove('error');
-            resultBox.classList.remove('show');
+            // LOOP: Calcula para cada parcela
+            for (let i = 0; i < qtdParcelas; i++) {
+                // Calcula o vencimento desta parcela específica
+                let dataVencimentoParcela = adicionarMeses(dataInicial, i);
+                
+                let checkDate = new Date(dataVencimentoParcela.getTime());
+                const maxLookback = 45;
+                let found = false;
+                let daysBack = 0;
 
-            while (daysBack < maxLookback) {
-                const curY = checkDate.getFullYear();
-                const curM = checkDate.getMonth();
-                const curD = checkDate.getDate();
-                const key = `${curY}-${curM}`;
+                let bestY, bestM, bestD; // Armazena o dia de pagamento encontrado
 
-                if (calendarData[key] && calendarData[key][curD]) {
-                    const [type, desc] = calendarData[key][curD];
-                    if (type === 'evt-pagamento') {
-                        // SUCESSO
-                        resultLabel.innerText = "Pague no dia:";
-                        resultDateDisplay.innerText = `${String(curD).padStart(2,'0')}/${String(curM+1).padStart(2,'0')}/${curY}`;
-                        resultObsDisplay.innerText = "Melhor data de pagamento encontrada.";
-                        resultBox.classList.add('show');
-                        found = true;
-                        
-                        // SALVA O DESTAQUE E ATUALIZA O CALENDÁRIO
-                        highlightedDate = { day: curD, month: curM, year: curY };
-                        
-                        // Força ir para o mês correto e redesenhar (aplicando o pulso)
-                        currentMonth = curM;
-                        currentYear = curY;
-                        renderCalendar(curM, curY);
-                        
-                        break;
+                // Busca a data de pagamento para ESTA parcela
+                while (daysBack < maxLookback) {
+                    const curY = checkDate.getFullYear();
+                    const curM = checkDate.getMonth();
+                    const curD = checkDate.getDate();
+                    const key = `${curY}-${curM}`;
+
+                    if (calendarData[key] && calendarData[key][curD]) {
+                        const [type, desc] = calendarData[key][curD];
+                        if (type === 'evt-pagamento') {
+                            found = true;
+                            bestY = curY; bestM = curM; bestD = curD;
+                            
+                            // Se for a primeira parcela, salvamos para destacar no calendário
+                            if (i === 0) {
+                                primeiraDataEncontrada = { day: bestD, month: bestM, year: bestY };
+                            }
+                            break;
+                        }
                     }
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    daysBack++;
                 }
-                checkDate.setDate(checkDate.getDate() - 1);
-                daysBack++;
+
+                // Cria o Card (HTML) do resultado desta parcela
+                const cardParcela = document.createElement('div');
+                cardParcela.className = found ? 'calc-result show' : 'calc-result show error';
+                
+                // Formatação das datas para exibir na tela (DD/MM/AAAA)
+                const strVencOriginal = `${String(dataVencimentoParcela.getDate()).padStart(2,'0')}/${String(dataVencimentoParcela.getMonth()+1).padStart(2,'0')}/${dataVencimentoParcela.getFullYear()}`;
+                
+                if (found) {
+                    const strMelhorData = `${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
+                    cardParcela.innerHTML = `
+                        <div class="parcela-header">
+                            <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
+                            <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
+                        </div>
+                        <div class="result-date">${strMelhorData}</div>
+                        <div class="result-obs">Sugerido</div>
+                    `;
+                } else {
+                    cardParcela.innerHTML = `
+                        <div class="parcela-header">
+                            <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
+                            <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
+                        </div>
+                        <div class="result-date" style="font-size: 1.2rem;">Sem dados</div>
+                        <div class="result-obs">Data fora da base configurada.</div>
+                    `;
+                }
+
+                // Adiciona o card na tela com um pequeno atraso (efeito visual de cascata)
+                cardParcela.style.animationDelay = `${i * 0.1}s`;
+                container.appendChild(cardParcela);
             }
 
-            if (!found) {
-                showError("Nenhuma data de pagamento encontrada próxima a este dia.");
+            // Atualiza o calendário para focar na PRIMEIRA parcela e destacá-la
+            if (primeiraDataEncontrada) {
+                highlightedDate = primeiraDataEncontrada;
+                currentMonth = primeiraDataEncontrada.month;
+                currentYear = primeiraDataEncontrada.year;
+                renderCalendar(currentMonth, currentYear);
+            } else {
                 renderCalendar(currentMonth, currentYear);
             }
         }
 
-        function showError(msg) {
-            const resultBox = document.getElementById('calcResult');
-            const resultLabel = document.getElementById('resultLabel');
-            const resultDateDisplay = document.getElementById('resultDateDisplay');
-            const resultObsDisplay = document.getElementById('resultObsDisplay');
-
-            resultBox.classList.add('show');
-            resultBox.classList.add('error');
-            resultLabel.innerText = "Atenção";
-            resultDateDisplay.innerText = "Ops!";
-            resultObsDisplay.innerText = msg;
-        }
-
-        renderCalendar(currentMonth, currentYear);
+        // Inicializa a tela desenhando o primeiro placeholder vazio
+        drawPlaceholders();
     </script>
 </body>
 </html>
