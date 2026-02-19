@@ -194,25 +194,25 @@
 
         <div>
             <div class="panel calculator-box">
-                <div class="calc-title">Quando pagar meu boleto?</div>
-                
+                <div class="calc-title">Quando pagar meus boletos?</div>
+
+                <!-- NOVO: Seleção de Quantidade de Boletos PRIMEIRO -->
                 <div class="input-group">
-                    <label>Data do Primeiro Vencimento:</label>
-                    <input type="date" id="billDate" class="date-input" onchange="handleInputChange()">
+                    <label>Quantidade de Boletos:</label>
+                    <select id="installments" class="date-input" onchange="renderDateInputs()">
+                        <option value="1">1 Boleto</option>
+                        <option value="2">2 Boletos</option>
+                        <option value="3">3 Boletos</option>
+                        <option value="4">4 Boletos</option>
+                        <option value="5">5 Boletos</option>
+                        <option value="6">6 Boletos</option>
+                        <option value="12">12 Boletos</option>
+                    </select>
                 </div>
 
-                <!-- NOVO: Seleção de Parcelas -->
-                <div class="input-group">
-                    <label>Quantidade de Parcelas:</label>
-                    <select id="installments" class="date-input" onchange="handleInputChange()">
-                        <option value="1">1x (À vista)</option>
-                        <option value="2">2x</option>
-                        <option value="3">3x</option>
-                        <option value="4">4x</option>
-                        <option value="5">5x</option>
-                        <option value="6">6x</option>
-                        <option value="12">12x</option>
-                    </select>
+                <!-- NOVO: Container dinâmico para os inputs de data -->
+                <div id="dateInputsContainer">
+                    <!-- Inputs gerados via JS -->
                 </div>
 
                 <button class="btn-check" onclick="calculatePaymentDate(true)">Calcular Melhor Dia</button>
@@ -309,93 +309,85 @@
             renderCalendar(currentMonth, currentYear);
         }
 
-        // --- NOVA FUNÇÃO: Lida com mudanças nos inputs em tempo real ---
-        function handleInputChange() {
-            const inputDateStr = document.getElementById('billDate').value;
-            if (inputDateStr) {
-                calculatePaymentDate(false); // Calcula automaticamente se tiver data
-            } else {
-                drawPlaceholders(); // Apenas desenha as caixinhas vazias se não tiver data
-            }
-        }
-
-        // --- NOVA FUNÇÃO: Desenha as caixinhas aguardando dados ---
-        function drawPlaceholders() {
-            const qtdParcelas = parseInt(document.getElementById('installments').value);
-            const container = document.getElementById('resultsContainer');
+        // --- NOVA FUNÇÃO: Renderiza os campos de data baseados na quantidade ---
+        function renderDateInputs() {
+            const qtd = parseInt(document.getElementById('installments').value);
+            const container = document.getElementById('dateInputsContainer');
+            
+            // Salva os valores atuais para não perder o que já foi digitado ao mudar a quantidade
+            const currentInputs = container.querySelectorAll('.dynamic-date-input');
+            const values = Array.from(currentInputs).map(input => input.value);
+            
             container.innerHTML = '';
             
-            highlightedDate = null; // Remove o destaque do calendário
-            renderCalendar(currentMonth, currentYear); // Atualiza o calendário sem destaque
-
-            for (let i = 0; i < qtdParcelas; i++) {
-                const card = document.createElement('div');
-                card.className = 'calc-result show';
-                card.style.opacity = '0.5'; // Deixa visualmente "apagado"
-                card.style.borderLeftColor = 'var(--text-muted)'; // Cor neutra
-                card.innerHTML = `
-                    <div class="parcela-header">
-                        <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
-                        <span class="vencimento-original">Vence em: --/--/----</span>
-                    </div>
-                    <div class="result-date" style="color: var(--text-muted)">--/--</div>
-                    <div class="result-obs">Aguardando cálculo...</div>
-                `;
-                container.appendChild(card);
+            for (let i = 0; i < qtd; i++) {
+                const div = document.createElement('div');
+                div.className = 'input-group';
+                div.style.marginBottom = '10px'; // Mais compacto para caber vários
+                
+                const label = document.createElement('label');
+                label.innerText = `Vencimento do Boleto ${i + 1}:`;
+                label.style.fontSize = '0.8rem';
+                
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.className = 'date-input dynamic-date-input';
+                input.style.padding = '8px';
+                input.onchange = () => calculatePaymentDate(false); // Recalcula se alterar a data
+                
+                // Restaura o valor se já tinha sido preenchido
+                if (values[i]) {
+                    input.value = values[i];
+                }
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                container.appendChild(div);
             }
-        }
-
-        // --- FUNÇÃO AUXILIAR: Adiciona meses a uma data de forma segura ---
-        function adicionarMeses(dataOriginal, mesesParaAdicionar) {
-            let novaData = new Date(dataOriginal.getTime());
-            let mesDesejado = (novaData.getMonth() + mesesParaAdicionar) % 12;
-            novaData.setMonth(novaData.getMonth() + mesesParaAdicionar);
             
-            // Correção para casos como 31/01 + 1 mês = 03/03 (o correto seria 28/02)
-            if (novaData.getMonth() !== mesDesejado && novaData.getMonth() !== (mesDesejado + 12) % 12) {
-                novaData.setDate(0); // Volta para o último dia do mês anterior
-            }
-            return novaData;
+            calculatePaymentDate(false); // Recalcula os resultados
         }
 
-        // --- FUNÇÃO PRINCIPAL ---
+        // --- FUNÇÃO PRINCIPAL REESCRITA ---
         function calculatePaymentDate(fromButton = true) {
-            const inputDateStr = document.getElementById('billDate').value;
-            const qtdParcelas = parseInt(document.getElementById('installments').value);
+            const inputs = document.querySelectorAll('.dynamic-date-input');
             const container = document.getElementById('resultsContainer');
+            const qtdBoletos = inputs.length;
             
-            // Limpa resultados anteriores
             container.innerHTML = '';
             highlightedDate = null;
+            let primeiraDataEncontrada = null;
 
-            if (!inputDateStr) {
-                if (fromButton) {
-                    container.innerHTML = `<div class="calc-result show error"><div class="result-date">Ops!</div><div class="result-obs">Por favor, selecione uma data completa.</div></div>`;
-                    renderCalendar(currentMonth, currentYear); 
-                } else {
-                    drawPlaceholders();
-                }
-                return;
-            }
-
-            const [y, m, d] = inputDateStr.split('-').map(Number);
-            const dataInicial = new Date(y, m - 1, d);
-
-            let primeiraDataEncontrada = null; // Para focar no calendário depois
-
-            // LOOP: Calcula para cada parcela
-            for (let i = 0; i < qtdParcelas; i++) {
-                // Calcula o vencimento desta parcela específica
-                let dataVencimentoParcela = adicionarMeses(dataInicial, i);
+            inputs.forEach((input, index) => {
+                const inputDateStr = input.value;
                 
-                let checkDate = new Date(dataVencimentoParcela.getTime());
+                // Se a data deste boleto não foi preenchida, desenha o placeholder dele
+                if (!inputDateStr) {
+                    const card = document.createElement('div');
+                    card.className = 'calc-result show';
+                    card.style.opacity = '0.5'; 
+                    card.style.borderLeftColor = 'var(--text-muted)'; 
+                    card.innerHTML = `
+                        <div class="parcela-header">
+                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
+                            <span class="vencimento-original">Vence em: --/--/----</span>
+                        </div>
+                        <div class="result-date" style="color: var(--text-muted)">--/--</div>
+                        <div class="result-obs">Aguardando preenchimento...</div>
+                    `;
+                    container.appendChild(card);
+                    return; // Pula para o próximo boleto
+                }
+
+                // Se tem data, faz o cálculo buscando o dia igual ou anterior
+                const [y, m, d] = inputDateStr.split('-').map(Number);
+                let checkDate = new Date(y, m - 1, d);
+                
                 const maxLookback = 45;
                 let found = false;
                 let daysBack = 0;
+                let bestY, bestM, bestD;
 
-                let bestY, bestM, bestD; // Armazena o dia de pagamento encontrado
-
-                // Busca a data de pagamento para ESTA parcela
                 while (daysBack < maxLookback) {
                     const curY = checkDate.getFullYear();
                     const curM = checkDate.getMonth();
@@ -408,8 +400,8 @@
                             found = true;
                             bestY = curY; bestM = curM; bestD = curD;
                             
-                            // Se for a primeira parcela, salvamos para destacar no calendário
-                            if (i === 0) {
+                            // Salva apenas o primeiro pagamento encontrado para dar o pulso no calendário
+                            if (!primeiraDataEncontrada) {
                                 primeiraDataEncontrada = { day: bestD, month: bestM, year: bestY };
                             }
                             break;
@@ -419,27 +411,27 @@
                     daysBack++;
                 }
 
-                // Cria o Card (HTML) do resultado desta parcela
+                // Cria o Card de resultado
                 const cardParcela = document.createElement('div');
                 cardParcela.className = found ? 'calc-result show' : 'calc-result show error';
+                cardParcela.style.animationDelay = `${index * 0.1}s`;
                 
-                // Formatação das datas para exibir na tela (DD/MM/AAAA)
-                const strVencOriginal = `${String(dataVencimentoParcela.getDate()).padStart(2,'0')}/${String(dataVencimentoParcela.getMonth()+1).padStart(2,'0')}/${dataVencimentoParcela.getFullYear()}`;
+                const strVencOriginal = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
                 
                 if (found) {
                     const strMelhorData = `${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
                     cardParcela.innerHTML = `
                         <div class="parcela-header">
-                            <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
+                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
                             <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
                         </div>
                         <div class="result-date">${strMelhorData}</div>
-                        <div class="result-obs">Sugerido</div>
+                        <div class="result-obs">Sugerido (Igual ou Anterior)</div>
                     `;
                 } else {
                     cardParcela.innerHTML = `
                         <div class="parcela-header">
-                            <span class="parcela-numero">Parcela ${i + 1} de ${qtdParcelas}</span>
+                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
                             <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
                         </div>
                         <div class="result-date" style="font-size: 1.2rem;">Sem dados</div>
@@ -447,24 +439,20 @@
                     `;
                 }
 
-                // Adiciona o card na tela com um pequeno atraso (efeito visual de cascata)
-                cardParcela.style.animationDelay = `${i * 0.1}s`;
                 container.appendChild(cardParcela);
-            }
+            });
 
-            // Atualiza o calendário para focar na PRIMEIRA parcela e destacá-la
+            // Atualiza o calendário para focar e destacar o PRIMEIRO boleto processado
             if (primeiraDataEncontrada) {
                 highlightedDate = primeiraDataEncontrada;
                 currentMonth = primeiraDataEncontrada.month;
                 currentYear = primeiraDataEncontrada.year;
-                renderCalendar(currentMonth, currentYear);
-            } else {
-                renderCalendar(currentMonth, currentYear);
             }
+            renderCalendar(currentMonth, currentYear);
         }
 
-        // Inicializa a tela desenhando o primeiro placeholder vazio
-        drawPlaceholders();
+        // Inicializa a tela criando o primeiro campo de data
+        renderDateInputs();
     </script>
 </body>
 </html>
