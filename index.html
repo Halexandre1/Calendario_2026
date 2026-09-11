@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Financeiro Jan-Jun 2026 | Flamboyant</title>
+    <title>Painel Financeiro 2026 | Flamboyant</title>
     <style>
         :root {
             --bg-body: #0f1115;
@@ -12,14 +12,15 @@
             --text-muted: #6c757d;
             --accent: #00d4ff;
             
-            /* Cores Financeiras */
-            --c-pagamento: #00b050;       
-            --c-ponto: #7030a0;            
-            --c-nf-mes: #7f7f7f;          
-            --c-nf-pag: #fff200;          
-            --c-justificativa: #b020a8;   
-            --c-orcamento: #ff0055;       
-            --c-oc: #2c5aa0;              
+            /* Cores Financeiras baseadas na legenda das imagens */
+            --c-pagamento: #00b050;       /* Verde */
+            --c-ponto: #4a004a;           /* Roxo Escuro / Fechamento do Ponto */
+            --c-nf-mes: #7f7f7f;          /* Cinza */
+            --c-nf-pag: #fff200;          /* Amarelo */
+            --c-justificativa: #d100b5;   /* Magenta / Rosa forte */
+            --c-orcamento: #ff0055;       /* Vermelho/Rosa escuro */
+            --c-oc: #1c3c7a;              /* Azul escuro (OC) */
+            --c-inventario: #5c3a21;      /* Marrom (Inventário) */
         }
 
         body {
@@ -40,17 +41,17 @@
             grid-template-columns: 1fr;
             gap: 20px;
             width: 100%;
-            max-width: 1200px; /* Aumentei a largura máxima para acomodar melhor os 6 meses */
+            max-width: 1200px;
         }
         
         @media (min-width: 900px) {
-            .main-grid { grid-template-columns: 2fr 1fr; } /* Proporção ajustada para tela grande */
+            .main-grid { grid-template-columns: 2fr 1fr; }
         }
 
         /* --- COMPONENTES --- */
         header {
             display: flex;
-            justify-content: center; /* Centraliza o título, sem botões */
+            justify-content: center;
             align-items: center;
             width: 100%;
             max-width: 1200px;
@@ -72,16 +73,15 @@
         /* --- GRID DOS MESES --- */
         .calendars-wrapper {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Grade flexível: cria colunas automáticas */
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 15px;
-            max-height: 75vh; /* Limita a altura e cria rolagem interna */
+            max-height: 75vh;
             overflow-y: auto;
-            padding-right: 10px; /* Espaço para a barra de rolagem */
+            padding-right: 10px;
             scrollbar-width: thin;
             scrollbar-color: var(--accent) var(--bg-panel);
         }
 
-        /* Estilização da barra de rolagem (Webkit) */
         .calendars-wrapper::-webkit-scrollbar { width: 8px; }
         .calendars-wrapper::-webkit-scrollbar-track { background: var(--bg-panel); border-radius: 4px; }
         .calendars-wrapper::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
@@ -105,7 +105,7 @@
         .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; color: var(--text-muted); margin-bottom: 8px; font-size: 0.8rem;}
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .day {
-            height: 35px; /* Reduzido para caber mais calendários */
+            height: 35px;
             display: flex; align-items: center; justify-content: center;
             border-radius: 4px; cursor: pointer; position: relative; background: #232730; font-weight: 500; font-size: 0.85rem; transition: 0.2s;
         }
@@ -127,7 +127,7 @@
         }
 
         /* CALCULADORA DE BOLETO */
-        .calculator-box { border-left: 4px solid var(--c-pagamento); position: sticky; top: 20px; } /* Mantém a calculadora visível ao rolar */
+        .calculator-box { border-left: 4px solid var(--c-pagamento); position: sticky; top: 20px; }
         .calc-title { font-size: 1.1rem; margin-bottom: 15px; color: var(--c-pagamento); text-transform: uppercase; font-weight: bold; }
         
         .input-group { margin-bottom: 15px; }
@@ -175,13 +175,17 @@
         
         .result-obs { font-size: 0.8rem; color: #e0e0e0; }
 
-        /* CORES EVENTOS */
+        /* CORES EVENTOS - Adicionado Novas Classes */
         .evt-pagamento { background-color: var(--c-pagamento); color: #fff; }
         .evt-nf-pag { background-color: var(--c-nf-pag); color: #000; font-weight: bold; }
         .evt-ponto { background-color: var(--c-ponto); color: #fff; }
         .evt-nf-mes { background-color: var(--c-nf-mes); color: #fff; }
         .evt-justificativa { background-color: var(--c-justificativa); color: #fff; }
         .evt-orcamento { background-color: var(--c-orcamento); color: #fff; }
+        .evt-oc { background-color: var(--c-oc); color: #fff; }
+        .evt-inventario { background-color: var(--c-inventario); color: #fff; }
+        
+        /* Dia com duas cores (Amarelo e Cinza na legenda) */
         .evt-mixed { background: linear-gradient(135deg, var(--c-nf-pag) 50%, var(--c-nf-mes) 50%); color: #000; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -190,20 +194,20 @@
 <body>
 
     <header>
-        <h1>Painel Financeiro - Jan a Jun 2026</h1>
+        <!-- Título atualizado para refletir o ano todo -->
+        <h1>Painel Financeiro - Ano Inteiro 2026</h1>
     </header>
 
     <div class="main-grid">
         
         <!-- Lado Esquerdo: Calendários e Detalhes -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
-            <!-- Painel de Detalhes Dinâmico movido para o topo para fácil visualização -->
             <div class="panel" id="detailsPanel" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="font-size: 0.9rem; color: var(--text-muted);">Evento Selecionado:</div>
                 <div id="detailsText" style="font-size: 1.2rem; font-weight: bold; margin-top: 5px;">Clique em um dia no calendário abaixo</div>
             </div>
 
-            <!-- Contêiner dos 6 Meses -->
+            <!-- Contêiner dos Meses -->
             <div class="panel">
                 <div class="calendars-wrapper" id="calendarsWrapper">
                     <!-- Os meses serão gerados aqui via JavaScript -->
@@ -240,12 +244,18 @@
                 </div>
             </div>
 
+            <!-- Legenda atualizada com as novas informações -->
             <div class="panel">
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">LEGENDA RÁPIDA</div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-pagamento); margin-right:5px; border-radius:50%;"></div>Pagamento</div>
                     <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-nf-pag); margin-right:5px; border-radius:50%;"></div>NF Pagto</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-ponto); margin-right:5px; border-radius:50%;"></div>Ponto</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-ponto); margin-right:5px; border-radius:50%;"></div>Fechamento Ponto</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-nf-mes); margin-right:5px; border-radius:50%;"></div>NF Mês Atual</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-justificativa); margin-right:5px; border-radius:50%;"></div>Justif. Ponto</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-orcamento); margin-right:5px; border-radius:50%;"></div>Remanejamento</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-oc); margin-right:5px; border-radius:50%;"></div>Req. OC</div>
+                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-inventario); margin-right:5px; border-radius:50%;"></div>Inventário</div>
                 </div>
             </div>
         </div>
@@ -253,28 +263,33 @@
     </div>
 
     <script>
-        // --- BASE DE DADOS (Inalterada) ---
+        // --- BASE DE DADOS ATUALIZADA (Janeiro a Dezembro de 2026) ---
+        // Extraída diretamente das imagens fornecidas.
         const calendarData = {
-            "2026-0": { 7: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-nf-mes", "Limite NF (Mês Atual)"], 28: ["evt-nf-pag", "Limite Envio NF"], 29: ["evt-pagamento", "Pagamento"] },
-            "2026-1": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 16: ["evt-orcamento", "Limite Remanejamento"], 17: ["evt-ponto", "Fechamento do Ponto"], 19: ["evt-pagamento", "Pagamento"], 25: ["evt-nf-pag", "Limite Envio NF"], 26: ["evt-pagamento", "Pagamento"] },
-            "2026-2": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"], 31: ["evt-nf-pag", "Limite Envio NF"] },
-            "2026-3": { 2: ["evt-pagamento", "Pagamento"], 6: ["evt-orcamento", "Limite Remanejamento"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-nf-mes", "Limite NF Mês Atual"], 28: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
-            "2026-4": { 6: ["evt-nf-pag", "Limite Envio NF"], 7: ["evt-pagamento", "Pagamento"], 13: ["evt-nf-pag", "Limite Envio NF"], 14: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 25: ["evt-nf-mes", "Limite NF Mês Atual"], 26: ["evt-nf-pag", "Limite Envio NF"], 28: ["evt-pagamento", "Pagamento"] },
-            "2026-5": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 10: ["evt-nf-pag", "Limite Envio NF"], 11: ["evt-pagamento", "Pagamento"], 17: ["evt-nf-pag", "Limite Envio NF"], 18: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 24: ["evt-nf-pag", "Limite Envio NF"], 25: ["evt-pagamento", "Pagamento"] },
-            "2026-6": { 1: ["evt-pagamento", "Pagamento"], 15: ["evt-pagamento", "Pagamento"], 28: ["evt-pagamento", "Pagamento"] }, 
-            "2026-7": { 5: ["evt-pagamento", "Pagamento"], 15: ["evt-pagamento", "Pagamento"], 25: ["evt-pagamento", "Pagamento"] }  
+            "2026-0": { 7: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-mixed", "Limite NF Pagamento + Mês"], 28: ["evt-nf-pag", "Limite Envio NF"], 29: ["evt-pagamento", "Pagamento"] },
+            "2026-1": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 17: ["evt-ponto", "Fechamento do Ponto"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-pagamento", "Pagamento"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
+            "2026-2": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-ponto", "Fechamento do Ponto"], 20: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
+            "2026-3": { 6: ["evt-orcamento", "Limite Remanejamento"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
+            "2026-4": { 6: ["evt-nf-pag", "Limite Envio NF"], 7: ["evt-pagamento", "Pagamento"], 13: ["evt-nf-pag", "Limite Envio NF"], 14: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 28: ["evt-pagamento", "Pagamento"] },
+            "2026-5": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 22: ["evt-justificativa", "Limite Justificativa"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 25: ["evt-pagamento", "Pagamento"] },
+            "2026-6": { 1: ["evt-nf-pag", "Limite Envio NF"], 2: ["evt-pagamento", "Pagamento"], 3: ["evt-justificativa", "Limite Justificativa"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 15: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
+            "2026-7": { 5: ["evt-nf-pag", "Limite Envio NF"], 6: ["evt-pagamento", "Pagamento"], 12: ["evt-nf-pag", "Limite Envio NF"], 13: ["evt-pagamento", "Pagamento"], 19: ["evt-nf-pag", "Limite Envio NF"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 27: ["evt-pagamento", "Pagamento"] },
+            "2026-8": { 1: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 23: ["evt-nf-pag", "Limite Envio NF"], 24: ["evt-pagamento", "Pagamento"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 30: ["evt-nf-pag", "Limite Envio NF"] },
+            "2026-9": { 1: ["evt-pagamento", "Pagamento"], 5: ["evt-orcamento", "Limite Remanejamento"], 6: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-pagamento", "Pagamento"] },
+            "2026-10": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 17: ["evt-nf-pag", "Limite Envio NF"], 18: ["evt-ponto", "Fechamento do Ponto"], 19: ["evt-justificativa", "Limite Justificativa"], 24: ["evt-nf-pag", "Limite Envio NF"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
+            "2026-11": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 5: ["evt-inventario", "Inventário Almoxarifado"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 11: ["evt-oc", "Limite Requisição OC"], 15: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-ponto", "Fechamento do Ponto"], 18: ["evt-justificativa", "Limite Justificativa"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 30: ["evt-pagamento", "Pagamento"] }
         };
 
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const currentYear = 2026;
 
-        // --- NOVA FUNÇÃO: Renderiza todos os meses de Janeiro a Junho ---
         function renderAllMonths() {
             const wrapper = document.getElementById('calendarsWrapper');
             wrapper.innerHTML = "";
 
-            // Loop de 0 (Janeiro) até 5 (Junho)
-            for (let month = 0; month <= 5; month++) {
+            // O Segredo está aqui: Mudamos a condição de "month <= 5" para "month <= 11" 
+            // Dessa forma, o laço passará por todos os 12 meses do ano.
+            for (let month = 0; month <= 11; month++) {
                 const monthDiv = document.createElement('div');
                 monthDiv.className = 'month-container';
 
@@ -310,7 +325,6 @@
                     }
                     
                     const cell = createCell(cssClass, day);
-                    // Adicionamos um ID único para cada dia para podermos destacá-lo facilmente
                     cell.id = `day-${currentYear}-${month}-${day}`;
                     
                     cell.onclick = () => showDetails(day, monthNames[month], desc || "Sem eventos", cssClass);
