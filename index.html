@@ -175,7 +175,7 @@
         
         .result-obs { font-size: 0.8rem; color: #e0e0e0; }
 
-        /* CORES EVENTOS - Adicionado Novas Classes */
+        /* CORES EVENTOS */
         .evt-pagamento { background-color: var(--c-pagamento); color: #fff; }
         .evt-nf-pag { background-color: var(--c-nf-pag); color: #000; font-weight: bold; }
         .evt-ponto { background-color: var(--c-ponto); color: #fff; }
@@ -185,7 +185,6 @@
         .evt-oc { background-color: var(--c-oc); color: #fff; }
         .evt-inventario { background-color: var(--c-inventario); color: #fff; }
         
-        /* Dia com duas cores (Amarelo e Cinza na legenda) */
         .evt-mixed { background: linear-gradient(135deg, var(--c-nf-pag) 50%, var(--c-nf-mes) 50%); color: #000; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -194,7 +193,6 @@
 <body>
 
     <header>
-        <!-- Título atualizado para refletir o ano todo -->
         <h1>Painel Financeiro - Ano Inteiro 2026</h1>
     </header>
 
@@ -244,7 +242,6 @@
                 </div>
             </div>
 
-            <!-- Legenda atualizada com as novas informações -->
             <div class="panel">
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">LEGENDA RÁPIDA</div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -264,7 +261,6 @@
 
     <script>
         // --- BASE DE DADOS ATUALIZADA (Janeiro a Dezembro de 2026) ---
-        // Extraída diretamente das imagens fornecidas.
         const calendarData = {
             "2026-0": { 7: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-mixed", "Limite NF Pagamento + Mês"], 28: ["evt-nf-pag", "Limite Envio NF"], 29: ["evt-pagamento", "Pagamento"] },
             "2026-1": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 17: ["evt-ponto", "Fechamento do Ponto"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-pagamento", "Pagamento"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
@@ -287,11 +283,11 @@
             const wrapper = document.getElementById('calendarsWrapper');
             wrapper.innerHTML = "";
 
-            // O Segredo está aqui: Mudamos a condição de "month <= 5" para "month <= 11" 
-            // Dessa forma, o laço passará por todos os 12 meses do ano.
             for (let month = 0; month <= 11; month++) {
                 const monthDiv = document.createElement('div');
                 monthDiv.className = 'month-container';
+                // ID único necessário para a rolagem automática
+                monthDiv.id = `month-container-${month}`;
 
                 const title = document.createElement('h3');
                 title.className = 'month-title';
@@ -309,12 +305,10 @@
                 const firstDay = new Date(currentYear, month, 1).getDay();
                 const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
 
-                // Dias vazios do início do mês
                 for (let i = 0; i < firstDay; i++) {
                     daysGrid.appendChild(createCell('empty', ''));
                 }
 
-                // Dias do mês
                 for (let day = 1; day <= daysInMonth; day++) {
                     const key = `${currentYear}-${month}`;
                     let cssClass = '';
@@ -393,7 +387,6 @@
             
             container.innerHTML = '';
             
-            // Remove destaques anteriores
             document.querySelectorAll('.pulsing-highlight').forEach(el => el.classList.remove('pulsing-highlight'));
             
             let primeiraDataEncontrada = null;
@@ -442,7 +435,6 @@
                                 primeiraDataEncontrada = { day: bestD, month: bestM, year: bestY };
                             }
                             
-                            // Adiciona a classe de destaque diretamente na célula correta
                             const targetCell = document.getElementById(`day-${bestY}-${bestM}-${bestD}`);
                             if(targetCell) targetCell.classList.add('pulsing-highlight');
                             
@@ -483,7 +475,6 @@
                 container.appendChild(cardParcela);
             });
 
-            // Se encontrou uma data, rola a caixa de calendários suavemente até ela
             if (primeiraDataEncontrada) {
                 const targetCell = document.getElementById(`day-${primeiraDataEncontrada.year}-${primeiraDataEncontrada.month}-${primeiraDataEncontrada.day}`);
                 if (targetCell && fromButton) {
@@ -492,9 +483,23 @@
             }
         }
 
+        // Função para focar no mês atual
+        function scrollToCurrentMonth() {
+            const currentMonth = new Date().getMonth(); // Obtém o mês atual (0 a 11)
+            const monthElement = document.getElementById(`month-container-${currentMonth}`);
+            
+            if (monthElement) {
+                // Rola a tela até o mês atual
+                monthElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
         // --- INICIALIZAÇÃO ---
         renderAllMonths();
         renderDateInputs();
+        
+        // Executa a rolagem com um leve atraso (500ms) para garantir que tudo foi carregado
+        setTimeout(scrollToCurrentMonth, 500);
     </script>
 </body>
 </html>
