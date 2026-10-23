@@ -1,505 +1,206 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Financeiro 2026 | Flamboyant</title>
-    <style>
-        :root {
-            --bg-body: #0f1115;
-            --bg-panel: #181b21;
-            --text-main: #e0e0e0;
-            --text-muted: #6c757d;
-            --accent: #00d4ff;
-            
-            /* Cores Financeiras baseadas na legenda das imagens */
-            --c-pagamento: #00b050;       /* Verde */
-            --c-ponto: #4a004a;           /* Roxo Escuro / Fechamento do Ponto */
-            --c-nf-mes: #7f7f7f;          /* Cinza */
-            --c-nf-pag: #fff200;          /* Amarelo */
-            --c-justificativa: #d100b5;   /* Magenta / Rosa forte */
-            --c-orcamento: #ff0055;       /* Vermelho/Rosa escuro */
-            --c-oc: #1c3c7a;              /* Azul escuro (OC) */
-            --c-inventario: #5c3a21;      /* Marrom (Inventário) */
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        /* --- LAYOUT GRID PRINCIPAL --- */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-        }
-        
-        @media (min-width: 900px) {
-            .main-grid { grid-template-columns: 2fr 1fr; }
-        }
-
-        /* --- COMPONENTES --- */
-        header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 15px;
-        }
-
-        h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
-
-        .panel {
-            background: var(--bg-panel);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
-        }
-
-        /* --- GRID DOS MESES --- */
-        .calendars-wrapper {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 15px;
-            max-height: 75vh;
-            overflow-y: auto;
-            padding-right: 10px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent) var(--bg-panel);
-        }
-
-        .calendars-wrapper::-webkit-scrollbar { width: 8px; }
-        .calendars-wrapper::-webkit-scrollbar-track { background: var(--bg-panel); border-radius: 4px; }
-        .calendars-wrapper::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-
-        .month-container {
-            background: #1c1f26;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .month-title {
-            text-align: center;
-            color: var(--accent);
-            margin: 0 0 10px 0;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-        }
-
-        /* CALENDÁRIO MENOR */
-        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; color: var(--text-muted); margin-bottom: 8px; font-size: 0.8rem;}
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .day {
-            height: 35px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 4px; cursor: pointer; position: relative; background: #232730; font-weight: 500; font-size: 0.85rem; transition: 0.2s;
-        }
-        .day:hover { transform: scale(1.1); z-index: 2; border: 1px solid var(--accent); }
-        .day.empty { background: transparent; cursor: default; }
-
-        /* ANIMAÇÃO DE DESTAQUE */
-        .pulsing-highlight {
-            border: 2px solid #fff !important;
-            box-shadow: 0 0 15px var(--c-pagamento);
-            animation: pulse-green 1.5s infinite;
-            z-index: 10;
-        }
-
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(0, 176, 80, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 176, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 176, 80, 0); }
-        }
-
-        /* CALCULADORA DE BOLETO */
-        .calculator-box { border-left: 4px solid var(--c-pagamento); position: sticky; top: 20px; }
-        .calc-title { font-size: 1.1rem; margin-bottom: 15px; color: var(--c-pagamento); text-transform: uppercase; font-weight: bold; }
-        
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; color: var(--text-muted); margin-bottom: 5px; font-size: 0.9rem; }
-        .date-input {
-            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444;
-            background: #0f1115; color: white; font-family: inherit; font-size: 1rem;
-            box-sizing: border-box;
-        }
-        .date-input:focus { outline: none; border-color: var(--accent); }
-
-        .btn-check {
-            width: 100%; padding: 12px; background: var(--c-pagamento); color: white; border: none;
-            border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
-            margin-bottom: 15px;
-        }
-        .btn-check:hover { background: #00d662; }
-
-        /* RESULTADOS */
-        .results-container { display: flex; flex-direction: column; gap: 10px; max-height: 40vh; overflow-y: auto; padding-right: 5px; }
-        .results-container::-webkit-scrollbar { width: 5px; }
-        .results-container::-webkit-scrollbar-thumb { background: var(--c-pagamento); border-radius: 4px; }
-
-        .calc-result {
-            background: rgba(0, 176, 80, 0.1);
-            padding: 15px; border-radius: 6px; text-align: center;
-            display: none; 
-            border-left: 3px solid var(--c-pagamento);
-        }
-        
-        .calc-result.show { display: flex; flex-direction: column; animation: fadeIn 0.4s; }
-        .calc-result.error { background: rgba(255, 0, 85, 0.1); border-left-color: var(--c-orcamento); }
-        
-        .parcela-header {
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
-        }
-        
-        .parcela-numero { font-weight: bold; color: var(--accent); }
-        .vencimento-original { font-size: 0.8rem; }
-        
-        .result-date { font-size: 1.6rem; font-weight: bold; color: var(--c-pagamento); margin: 5px 0; }
-        .calc-result.error .result-date { color: var(--c-orcamento); font-size: 1.2rem; }
-        
-        .result-obs { font-size: 0.8rem; color: #e0e0e0; }
-
-        /* CORES EVENTOS */
-        .evt-pagamento { background-color: var(--c-pagamento); color: #fff; }
-        .evt-nf-pag { background-color: var(--c-nf-pag); color: #000; font-weight: bold; }
-        .evt-ponto { background-color: var(--c-ponto); color: #fff; }
-        .evt-nf-mes { background-color: var(--c-nf-mes); color: #fff; }
-        .evt-justificativa { background-color: var(--c-justificativa); color: #fff; }
-        .evt-orcamento { background-color: var(--c-orcamento); color: #fff; }
-        .evt-oc { background-color: var(--c-oc); color: #fff; }
-        .evt-inventario { background-color: var(--c-inventario); color: #fff; }
-        
-        .evt-mixed { background: linear-gradient(135deg, var(--c-nf-pag) 50%, var(--c-nf-mes) 50%); color: #000; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Financeiro 2026 | Flamboyant</title>
+<style>
+:root{--bg-body:#0f1115;--bg-panel:#181b21;--text-main:#e0e0e0;--text-muted:#6c757d;--accent:#00d4ff;
+--c-pagamento:#00b050;--c-ponto:#4a004a;--c-nf-mes:#7f7f7f;--c-nf-pag:#fff200;--c-justificativa:#d100b5;--c-orcamento:#ff0055;--c-oc:#1c3c7a;--c-inventario:#5c3a21;}
+body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background-color:var(--bg-body);color:var(--text-main);display:flex;flex-direction:column;align-items:center;min-height:100vh;margin:0;padding:20px;}
+.main-grid{display:grid;grid-template-columns:1fr;gap:20px;width:100%;max-width:1200px;}
+@media (min-width:900px){.main-grid{grid-template-columns:2fr 1fr;}}
+header{display:flex;justify-content:center;align-items:center;width:100%;max-width:1200px;margin-bottom:20px;border-bottom:2px solid var(--accent);padding-bottom:15px;}
+h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
+.panel{background:var(--bg-panel);padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);margin-bottom:20px;}
+.calendars-wrapper{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:15px;max-height:75vh;overflow-y:auto;padding-right:10px;scrollbar-width:thin;scrollbar-color:var(--accent) var(--bg-panel);}
+.calendars-wrapper::-webkit-scrollbar{width:8px;}
+.calendars-wrapper::-webkit-scrollbar-track{background:var(--bg-panel);border-radius:4px;}
+.calendars-wrapper::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px;}
+.month-container{background:#1c1f26;padding:15px;border-radius:8px;border:1px solid rgba(255,255,255,.05);}
+.month-title{text-align:center;color:var(--accent);margin:0 0 10px 0;font-size:1.1rem;text-transform:uppercase;}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-weight:bold;color:var(--text-muted);margin-bottom:8px;font-size:.8rem;}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.day{height:35px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;position:relative;background:#232730;font-weight:500;font-size:.85rem;transition:.2s;}
+.day:hover{transform:scale(1.1);z-index:2;border:1px solid var(--accent);}
+.day.empty{background:transparent;cursor:default;}
+.pulsing-highlight{border:2px solid #fff !important;box-shadow:0 0 15px var(--c-pagamento);animation:pulse-green 1.5s infinite;z-index:10;}
+@keyframes pulse-green{0%{box-shadow:0 0 0 0 rgba(0,176,80,.7);}70%{box-shadow:0 0 0 10px rgba(0,176,80,0);}100%{box-shadow:0 0 0 0 rgba(0,176,80,0);}}
+.calculator-box{border-left:4px solid var(--c-pagamento);position:sticky;top:20px;}
+.calc-title{font-size:1.1rem;margin-bottom:15px;color:var(--c-pagamento);text-transform:uppercase;font-weight:bold;}
+.input-group{margin-bottom:15px;}
+.input-group label{display:block;color:var(--text-muted);margin-bottom:5px;font-size:.9rem;}
+.date-input{width:100%;padding:10px;border-radius:6px;border:1px solid #444;background:#0f1115;color:white;font-family:inherit;font-size:1rem;box-sizing:border-box;}
+.date-input:focus{outline:none;border-color:var(--accent);}
+.btn-check{width:100%;padding:12px;background:var(--c-pagamento);color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:.2s;margin-bottom:15px;}
+.btn-check:hover{background:#00d662;}
+.results-container{display:flex;flex-direction:column;gap:10px;max-height:40vh;overflow-y:auto;padding-right:5px;}
+.results-container::-webkit-scrollbar{width:5px;}
+.results-container::-webkit-scrollbar-thumb{background:var(--c-pagamento);border-radius:4px;}
+.calc-result{background:rgba(0,176,80,.1);padding:15px;border-radius:6px;text-align:center;display:none;border-left:3px solid var(--c-pagamento);}
+.calc-result.show{display:flex;flex-direction:column;animation:fadeIn .4s;}
+.calc-result.error{background:rgba(255,0,85,.1);border-left-color:var(--c-orcamento);}
+.parcela-header{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--text-muted);margin-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:5px;}
+.parcela-numero{font-weight:bold;color:var(--accent);}
+.vencimento-original{font-size:.8rem;}
+.result-date{font-size:1.6rem;font-weight:bold;color:var(--c-pagamento);margin:5px 0;}
+.calc-result.error .result-date{color:var(--c-orcamento);font-size:1.2rem;}
+.result-obs{font-size:.8rem;color:#e0e0e0;}
+.evt-pagamento{background-color:var(--c-pagamento);color:#fff;}
+.evt-nf-pag{background-color:var(--c-nf-pag);color:#000;font-weight:bold;}
+.evt-ponto{background-color:var(--c-ponto);color:#fff;}
+.evt-nf-mes{background-color:var(--c-nf-mes);color:#fff;}
+.evt-justificativa{background-color:var(--c-justificativa);color:#fff;}
+.evt-orcamento{background-color:var(--c-orcamento);color:#fff;}
+.evt-oc{background-color:var(--c-oc);color:#fff;}
+.evt-inventario{background-color:var(--c-inventario);color:#fff;}
+.evt-mixed{background:linear-gradient(90deg,var(--c-nf-pag) 50%,var(--c-nf-mes) 50%);color:#000;font-weight:bold;}
+.evt-nf-just{background:linear-gradient(90deg,var(--c-nf-pag) 50%,var(--c-justificativa) 50%);color:#000;font-weight:bold;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+</style>
 </head>
 <body>
-
-    <header>
-        <h1>Painel Financeiro - Ano Inteiro 2026</h1>
-    </header>
-
-    <div class="main-grid">
-        
-        <!-- Lado Esquerdo: Calendários e Detalhes -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div class="panel" id="detailsPanel" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="font-size: 0.9rem; color: var(--text-muted);">Evento Selecionado:</div>
-                <div id="detailsText" style="font-size: 1.2rem; font-weight: bold; margin-top: 5px;">Clique em um dia no calendário abaixo</div>
-            </div>
-
-            <!-- Contêiner dos Meses -->
-            <div class="panel">
-                <div class="calendars-wrapper" id="calendarsWrapper">
-                    <!-- Os meses serão gerados aqui via JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Lado Direito: Calculadora e Legenda -->
-        <div>
-            <div class="panel calculator-box">
-                <div class="calc-title">Quando pagar meus boletos?</div>
-
-                <div class="input-group">
-                    <label>Quantidade de Boletos:</label>
-                    <select id="installments" class="date-input" onchange="renderDateInputs()">
-                        <option value="1">1 Boleto</option>
-                        <option value="2">2 Boletos</option>
-                        <option value="3">3 Boletos</option>
-                        <option value="4">4 Boletos</option>
-                        <option value="5">5 Boletos</option>
-                        <option value="6">6 Boletos</option>
-                        <option value="12">12 Boletos</option>
-                    </select>
-                </div>
-
-                <div id="dateInputsContainer">
-                    <!-- Inputs gerados via JS -->
-                </div>
-
-                <button class="btn-check" onclick="calculatePaymentDate(true)">Calcular Melhor Dia</button>
-
-                <div id="resultsContainer" class="results-container">
-                    <!-- Resultados dinâmicos -->
-                </div>
-            </div>
-
-            <div class="panel">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">LEGENDA RÁPIDA</div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-pagamento); margin-right:5px; border-radius:50%;"></div>Pagamento</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-nf-pag); margin-right:5px; border-radius:50%;"></div>NF Pagto</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-ponto); margin-right:5px; border-radius:50%;"></div>Fechamento Ponto</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-nf-mes); margin-right:5px; border-radius:50%;"></div>NF Mês Atual</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-justificativa); margin-right:5px; border-radius:50%;"></div>Justif. Ponto</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-orcamento); margin-right:5px; border-radius:50%;"></div>Remanejamento</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-oc); margin-right:5px; border-radius:50%;"></div>Req. OC</div>
-                    <div style="display:flex; align-items:center; font-size:0.8rem;"><div style="width:10px; height:10px; background:var(--c-inventario); margin-right:5px; border-radius:50%;"></div>Inventário</div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // --- BASE DE DADOS ATUALIZADA (Janeiro a Dezembro de 2026) ---
-        const calendarData = {
-            "2026-0": { 7: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-mixed", "Limite NF Pagamento + Mês"], 28: ["evt-nf-pag", "Limite Envio NF"], 29: ["evt-pagamento", "Pagamento"] },
-            "2026-1": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 17: ["evt-ponto", "Fechamento do Ponto"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-pagamento", "Pagamento"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
-            "2026-2": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 18: ["evt-nf-pag", "Limite Envio NF"], 19: ["evt-ponto", "Fechamento do Ponto"], 20: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
-            "2026-3": { 6: ["evt-orcamento", "Limite Remanejamento"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
-            "2026-4": { 6: ["evt-nf-pag", "Limite Envio NF"], 7: ["evt-pagamento", "Pagamento"], 13: ["evt-nf-pag", "Limite Envio NF"], 14: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 28: ["evt-pagamento", "Pagamento"] },
-            "2026-5": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 22: ["evt-justificativa", "Limite Justificativa"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 25: ["evt-pagamento", "Pagamento"] },
-            "2026-6": { 1: ["evt-nf-pag", "Limite Envio NF"], 2: ["evt-pagamento", "Pagamento"], 3: ["evt-justificativa", "Limite Justificativa"], 8: ["evt-nf-pag", "Limite Envio NF"], 9: ["evt-pagamento", "Pagamento"], 15: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-nf-pag", "Limite Envio NF"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-nf-pag", "Limite Envio NF"], 30: ["evt-pagamento", "Pagamento"] },
-            "2026-7": { 5: ["evt-nf-pag", "Limite Envio NF"], 6: ["evt-pagamento", "Pagamento"], 12: ["evt-nf-pag", "Limite Envio NF"], 13: ["evt-pagamento", "Pagamento"], 19: ["evt-nf-pag", "Limite Envio NF"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 27: ["evt-pagamento", "Pagamento"] },
-            "2026-8": { 1: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 23: ["evt-nf-pag", "Limite Envio NF"], 24: ["evt-pagamento", "Pagamento"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 30: ["evt-nf-pag", "Limite Envio NF"] },
-            "2026-9": { 1: ["evt-pagamento", "Pagamento"], 5: ["evt-orcamento", "Limite Remanejamento"], 6: ["evt-nf-pag", "Limite Envio NF"], 8: ["evt-pagamento", "Pagamento"], 14: ["evt-nf-pag", "Limite Envio NF"], 15: ["evt-pagamento", "Pagamento"], 20: ["evt-ponto", "Fechamento do Ponto"], 21: ["evt-justificativa", "Limite Justificativa"], 22: ["evt-pagamento", "Pagamento"], 23: ["evt-mixed", "Limite NF Pagamento + Mês"], 29: ["evt-pagamento", "Pagamento"] },
-            "2026-10": { 4: ["evt-nf-pag", "Limite Envio NF"], 5: ["evt-pagamento", "Pagamento"], 11: ["evt-nf-pag", "Limite Envio NF"], 12: ["evt-pagamento", "Pagamento"], 17: ["evt-nf-pag", "Limite Envio NF"], 18: ["evt-ponto", "Fechamento do Ponto"], 19: ["evt-justificativa", "Limite Justificativa"], 24: ["evt-nf-pag", "Limite Envio NF"], 25: ["evt-mixed", "Limite NF Pagamento + Mês"], 26: ["evt-pagamento", "Pagamento"] },
-            "2026-11": { 2: ["evt-nf-pag", "Limite Envio NF"], 3: ["evt-pagamento", "Pagamento"], 5: ["evt-inventario", "Inventário Almoxarifado"], 9: ["evt-nf-pag", "Limite Envio NF"], 10: ["evt-pagamento", "Pagamento"], 11: ["evt-oc", "Limite Requisição OC"], 15: ["evt-nf-pag", "Limite Envio NF"], 16: ["evt-nf-pag", "Limite Envio NF"], 17: ["evt-ponto", "Fechamento do Ponto"], 18: ["evt-justificativa", "Limite Justificativa"], 23: ["evt-pagamento", "Pagamento"], 24: ["evt-mixed", "Limite NF Pagamento + Mês"], 30: ["evt-pagamento", "Pagamento"] }
-        };
-
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        const currentYear = 2026;
-
-        function renderAllMonths() {
-            const wrapper = document.getElementById('calendarsWrapper');
-            wrapper.innerHTML = "";
-
-            for (let month = 0; month <= 11; month++) {
-                const monthDiv = document.createElement('div');
-                monthDiv.className = 'month-container';
-                // ID único necessário para a rolagem automática
-                monthDiv.id = `month-container-${month}`;
-
-                const title = document.createElement('h3');
-                title.className = 'month-title';
-                title.innerText = monthNames[month];
-                monthDiv.appendChild(title);
-
-                const weekdaysDiv = document.createElement('div');
-                weekdaysDiv.className = 'weekdays';
-                weekdaysDiv.innerHTML = '<div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>';
-                monthDiv.appendChild(weekdaysDiv);
-
-                const daysGrid = document.createElement('div');
-                daysGrid.className = 'days-grid';
-
-                const firstDay = new Date(currentYear, month, 1).getDay();
-                const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
-
-                for (let i = 0; i < firstDay; i++) {
-                    daysGrid.appendChild(createCell('empty', ''));
-                }
-
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const key = `${currentYear}-${month}`;
-                    let cssClass = '';
-                    let desc = '';
-                    
-                    if (calendarData[key] && calendarData[key][day]) {
-                        [cssClass, desc] = calendarData[key][day];
-                    }
-                    
-                    const cell = createCell(cssClass, day);
-                    cell.id = `day-${currentYear}-${month}-${day}`;
-                    
-                    cell.onclick = () => showDetails(day, monthNames[month], desc || "Sem eventos", cssClass);
-                    daysGrid.appendChild(cell);
-                }
-
-                monthDiv.appendChild(daysGrid);
-                wrapper.appendChild(monthDiv);
-            }
-        }
-
-        function createCell(type, text) {
-            const div = document.createElement('div');
-            div.className = `day ${type}`;
-            div.innerText = text;
-            return div;
-        }
-
-        function showDetails(day, month, text, cssClass) {
-            document.getElementById('detailsText').innerText = `${day} de ${month}: ${text}`;
-            const panel = document.getElementById('detailsPanel');
-            panel.style.borderLeft = cssClass ? `4px solid var(--c-${cssClass.replace('evt-','')})` : '4px solid #444';
-            if(cssClass === 'evt-mixed') panel.style.borderLeft = '4px solid #fff';
-        }
-
-        function renderDateInputs() {
-            const qtd = parseInt(document.getElementById('installments').value);
-            const container = document.getElementById('dateInputsContainer');
-            
-            const currentInputs = container.querySelectorAll('.dynamic-date-input');
-            const values = Array.from(currentInputs).map(input => input.value);
-            
-            container.innerHTML = '';
-            
-            for (let i = 0; i < qtd; i++) {
-                const div = document.createElement('div');
-                div.className = 'input-group';
-                div.style.marginBottom = '10px'; 
-                
-                const label = document.createElement('label');
-                label.innerText = `Vencimento do Boleto ${i + 1}:`;
-                label.style.fontSize = '0.8rem';
-                
-                const input = document.createElement('input');
-                input.type = 'date';
-                input.className = 'date-input dynamic-date-input';
-                input.style.padding = '8px';
-                input.onchange = () => calculatePaymentDate(false); 
-                
-                if (values[i]) {
-                    input.value = values[i];
-                }
-                
-                div.appendChild(label);
-                div.appendChild(input);
-                container.appendChild(div);
-            }
-            
-            calculatePaymentDate(false);
-        }
-
-        function calculatePaymentDate(fromButton = true) {
-            const inputs = document.querySelectorAll('.dynamic-date-input');
-            const container = document.getElementById('resultsContainer');
-            const qtdBoletos = inputs.length;
-            
-            container.innerHTML = '';
-            
-            document.querySelectorAll('.pulsing-highlight').forEach(el => el.classList.remove('pulsing-highlight'));
-            
-            let primeiraDataEncontrada = null;
-
-            inputs.forEach((input, index) => {
-                const inputDateStr = input.value;
-                
-                if (!inputDateStr) {
-                    const card = document.createElement('div');
-                    card.className = 'calc-result show';
-                    card.style.opacity = '0.5'; 
-                    card.style.borderLeftColor = 'var(--text-muted)'; 
-                    card.innerHTML = `
-                        <div class="parcela-header">
-                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
-                            <span class="vencimento-original">Vence em: --/--/----</span>
-                        </div>
-                        <div class="result-date" style="color: var(--text-muted)">--/--</div>
-                        <div class="result-obs">Aguardando preenchimento...</div>
-                    `;
-                    container.appendChild(card);
-                    return;
-                }
-
-                const [y, m, d] = inputDateStr.split('-').map(Number);
-                let checkDate = new Date(y, m - 1, d);
-                
-                const maxLookback = 45;
-                let found = false;
-                let daysBack = 0;
-                let bestY, bestM, bestD;
-
-                while (daysBack < maxLookback) {
-                    const curY = checkDate.getFullYear();
-                    const curM = checkDate.getMonth();
-                    const curD = checkDate.getDate();
-                    const key = `${curY}-${curM}`;
-
-                    if (calendarData[key] && calendarData[key][curD]) {
-                        const [type, desc] = calendarData[key][curD];
-                        if (type === 'evt-pagamento') {
-                            found = true;
-                            bestY = curY; bestM = curM; bestD = curD;
-                            
-                            if (!primeiraDataEncontrada) {
-                                primeiraDataEncontrada = { day: bestD, month: bestM, year: bestY };
-                            }
-                            
-                            const targetCell = document.getElementById(`day-${bestY}-${bestM}-${bestD}`);
-                            if(targetCell) targetCell.classList.add('pulsing-highlight');
-                            
-                            break;
-                        }
-                    }
-                    checkDate.setDate(checkDate.getDate() - 1);
-                    daysBack++;
-                }
-
-                const cardParcela = document.createElement('div');
-                cardParcela.className = found ? 'calc-result show' : 'calc-result show error';
-                cardParcela.style.animationDelay = `${index * 0.1}s`;
-                
-                const strVencOriginal = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
-                
-                if (found) {
-                    const strMelhorData = `${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
-                    cardParcela.innerHTML = `
-                        <div class="parcela-header">
-                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
-                            <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
-                        </div>
-                        <div class="result-date">${strMelhorData}</div>
-                        <div class="result-obs">Sugerido (Igual ou Anterior)</div>
-                    `;
-                } else {
-                    cardParcela.innerHTML = `
-                        <div class="parcela-header">
-                            <span class="parcela-numero">Boleto ${index + 1} de ${qtdBoletos}</span>
-                            <span class="vencimento-original">Vence em: ${strVencOriginal}</span>
-                        </div>
-                        <div class="result-date" style="font-size: 1.2rem;">Sem dados</div>
-                        <div class="result-obs">Data fora da base configurada.</div>
-                    `;
-                }
-
-                container.appendChild(cardParcela);
-            });
-
-            if (primeiraDataEncontrada) {
-                const targetCell = document.getElementById(`day-${primeiraDataEncontrada.year}-${primeiraDataEncontrada.month}-${primeiraDataEncontrada.day}`);
-                if (targetCell && fromButton) {
-                    targetCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        }
-
-        // Função para focar no mês atual
-        function scrollToCurrentMonth() {
-            const currentMonth = new Date().getMonth(); // Obtém o mês atual (0 a 11)
-            const monthElement = document.getElementById(`month-container-${currentMonth}`);
-            
-            if (monthElement) {
-                // Rola a tela até o mês atual
-                monthElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        // --- INICIALIZAÇÃO ---
-        renderAllMonths();
-        renderDateInputs();
-        
-        // Executa a rolagem com um leve atraso (500ms) para garantir que tudo foi carregado
-        setTimeout(scrollToCurrentMonth, 500);
-    </script>
+<header><h1>Painel Financeiro - Ano Inteiro 2026</h1></header>
+<div class="main-grid">
+<div style="display:flex;flex-direction:column;gap:20px;">
+<div class="panel" id="detailsPanel" style="min-height:80px;display:flex;flex-direction:column;justify-content:center;">
+<div style="font-size:.9rem;color:var(--text-muted);">Evento Selecionado:</div>
+<div id="detailsText" style="font-size:1.2rem;font-weight:bold;margin-top:5px;">Clique em um dia no calendário abaixo</div>
+</div>
+<div class="panel"><div class="calendars-wrapper" id="calendarsWrapper"></div></div>
+</div>
+<div>
+<div class="panel calculator-box">
+<div class="calc-title">Quando pagar meus boletos?</div>
+<div class="input-group">
+<label>Quantidade de Boletos:</label>
+<select id="installments" class="date-input" onchange="renderDateInputs()">
+<option value="1">1 Boleto</option><option value="2">2 Boletos</option><option value="3">3 Boletos</option><option value="4">4 Boletos</option><option value="5">5 Boletos</option><option value="6">6 Boletos</option><option value="12">12 Boletos</option>
+</select>
+</div>
+<div id="dateInputsContainer"></div>
+<button class="btn-check" onclick="calculatePaymentDate(true)">Calcular Melhor Dia</button>
+<div id="resultsContainer" class="results-container"></div>
+</div>
+<div class="panel">
+<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px;">LEGENDA RÁPIDA</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-pagamento);margin-right:5px;border-radius:50%;"></div>Pagamento</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-nf-pag);margin-right:5px;border-radius:50%;"></div>NF Pagto</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-ponto);margin-right:5px;border-radius:50%;"></div>Fechamento Ponto</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-nf-mes);margin-right:5px;border-radius:50%;"></div>NF Mês Atual</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-justificativa);margin-right:5px;border-radius:50%;"></div>Justif. Ponto</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-orcamento);margin-right:5px;border-radius:50%;"></div>Remanejamento</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-oc);margin-right:5px;border-radius:50%;"></div>Req. OC</div>
+<div style="display:flex;align-items:center;font-size:.8rem;"><div style="width:10px;height:10px;background:var(--c-inventario);margin-right:5px;border-radius:50%;"></div>Inventário</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+const NF="evt-nf-pag",PG="evt-pagamento",PT="evt-ponto",JU="evt-justificativa",OR="evt-orcamento",MX="evt-mixed",NJ="evt-nf-just";
+const calendarData = {
+"2026-0":{7:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],28:[NF,"Limite Envio NF"],29:[PG,"Pagamento"]},
+"2026-1":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[PT,"Fechamento do Ponto"],18:[NF,"Limite Envio NF"],19:[PG,"Pagamento"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
+"2026-2":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],11:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],18:[NF,"Limite Envio NF"],19:[PT,"Fechamento do Ponto"],20:[JU,"Limite Justificativa"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
+"2026-3":{6:[OR,"Limite Remanejamento"],8:[NF,"Limite Envio NF"],9:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[NF,"Limite Envio NF"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],29:[NF,"Limite Envio NF"],30:[PG,"Pagamento"]},
+"2026-4":{6:[NF,"Limite Envio NF"],7:[PG,"Pagamento"],13:[NF,"Limite Envio NF"],14:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],25:[MX,"Limite NF Pagamento + Mês"],28:[PG,"Pagamento"]},
+"2026-5":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],16:[NF,"Limite Envio NF"],17:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],22:[JU,"Limite Justificativa"],24:[MX,"Limite NF Pagamento + Mês"],25:[PG,"Pagamento"]},
+// Jul–Dez conferidos com a imagem oficial. Dias com cor dividida envolvendo pagamento => verde.
+"2026-6":{1:[NF,"Limite Envio NF"],2:[PG,"Pagamento"],3:[OR,"Limite Remanejamento"],8:[NF,"Limite Envio NF"],9:[PG,"Pagamento"],15:[NF,"Limite Envio NF"],16:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[NF,"Limite Envio NF"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],29:[NF,"Limite Envio NF"],30:[PG,"Pagamento"]},
+"2026-7":{5:[NF,"Limite Envio NF"],6:[PG,"Pagamento"],12:[NF,"Limite Envio NF"],13:[PG,"Pagamento"],19:[NF,"Limite Envio NF"],20:[PG,"Pagamento (e Fechamento do Ponto)"],21:[JU,"Limite Justificativa"],25:[MX,"Limite NF Pagamento + Mês"],27:[PG,"Pagamento"]},
+"2026-8":{1:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],16:[NF,"Limite Envio NF"],17:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],23:[NF,"Limite Envio NF"],24:[PG,"Pagamento"],25:[MX,"Limite NF Pagamento + Mês"]},
+"2026-9":{1:[PG,"Pagamento"],5:[OR,"Limite Remanejamento"],6:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[NJ,"Limite Envio NF + Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],29:[PG,"Pagamento"]},
+"2026-10":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],11:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[NF,"Limite Envio NF"],18:[PT,"Fechamento do Ponto"],19:[PG,"Pagamento (e Limite Justificativa)"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
+"2026-11":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],5:["evt-inventario","Inventário Almoxarifado"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],11:["evt-oc","Limite Requisição OC"],15:[NF,"Limite Envio NF"],17:[PG,"Pagamento (e Fechamento do Ponto)"],18:[NJ,"Limite Envio NF + Limite Justificativa"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],30:[PG,"Pagamento"]}
+};
+const monthNames=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const currentYear=2026;
+function renderAllMonths(){
+const wrapper=document.getElementById('calendarsWrapper');wrapper.innerHTML="";
+for(let month=0;month<=11;month++){
+const monthDiv=document.createElement('div');monthDiv.className='month-container';monthDiv.id=`month-container-${month}`;
+const title=document.createElement('h3');title.className='month-title';title.innerText=monthNames[month];monthDiv.appendChild(title);
+const wd=document.createElement('div');wd.className='weekdays';wd.innerHTML='<div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>';monthDiv.appendChild(wd);
+const grid=document.createElement('div');grid.className='days-grid';
+const firstDay=new Date(currentYear,month,1).getDay();
+const daysInMonth=new Date(currentYear,month+1,0).getDate();
+for(let i=0;i<firstDay;i++)grid.appendChild(createCell('empty',''));
+for(let day=1;day<=daysInMonth;day++){
+const key=`${currentYear}-${month}`;let cssClass='',desc='';
+if(calendarData[key]&&calendarData[key][day])[cssClass,desc]=calendarData[key][day];
+const cell=createCell(cssClass,day);cell.id=`day-${currentYear}-${month}-${day}`;
+cell.onclick=()=>showDetails(day,monthNames[month],desc||"Sem eventos",cssClass);
+grid.appendChild(cell);}
+monthDiv.appendChild(grid);wrapper.appendChild(monthDiv);}
+}
+function createCell(type,text){const d=document.createElement('div');d.className=`day ${type}`;d.innerText=text;return d;}
+function showDetails(day,month,text,cssClass){
+document.getElementById('detailsText').innerText=`${day} de ${month}: ${text}`;
+const panel=document.getElementById('detailsPanel');
+panel.style.borderLeft=cssClass?`4px solid var(--c-${cssClass.replace('evt-','')})`:'4px solid #444';
+if(cssClass==='evt-mixed'||cssClass==='evt-nf-just')panel.style.borderLeft='4px solid #fff';
+}
+function renderDateInputs(){
+const qtd=parseInt(document.getElementById('installments').value);
+const container=document.getElementById('dateInputsContainer');
+const values=Array.from(container.querySelectorAll('.dynamic-date-input')).map(i=>i.value);
+container.innerHTML='';
+for(let i=0;i<qtd;i++){
+const div=document.createElement('div');div.className='input-group';div.style.marginBottom='10px';
+const label=document.createElement('label');label.innerText=`Vencimento do Boleto ${i+1}:`;label.style.fontSize='.8rem';
+const input=document.createElement('input');input.type='date';input.className='date-input dynamic-date-input';input.style.padding='8px';
+input.onchange=()=>calculatePaymentDate(false);
+if(values[i])input.value=values[i];
+div.appendChild(label);div.appendChild(input);container.appendChild(div);}
+calculatePaymentDate(false);
+}
+function calculatePaymentDate(fromButton=true){
+const inputs=document.querySelectorAll('.dynamic-date-input');
+const container=document.getElementById('resultsContainer');
+const qtdBoletos=inputs.length;container.innerHTML='';
+document.querySelectorAll('.pulsing-highlight').forEach(el=>el.classList.remove('pulsing-highlight'));
+let primeira=null;
+inputs.forEach((input,index)=>{
+const s=input.value;
+if(!s){
+const card=document.createElement('div');card.className='calc-result show';card.style.opacity='0.5';card.style.borderLeftColor='var(--text-muted)';
+card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: --/--/----</span></div><div class="result-date" style="color:var(--text-muted)">--/--</div><div class="result-obs">Aguardando preenchimento...</div>`;
+container.appendChild(card);return;}
+const [y,m,d]=s.split('-').map(Number);
+let checkDate=new Date(y,m-1,d);
+let found=false,daysBack=0,bestY,bestM,bestD;
+while(daysBack<45){
+const curY=checkDate.getFullYear(),curM=checkDate.getMonth(),curD=checkDate.getDate();
+const key=`${curY}-${curM}`;
+if(calendarData[key]&&calendarData[key][curD]&&calendarData[key][curD][0]==='evt-pagamento'){
+found=true;bestY=curY;bestM=curM;bestD=curD;
+if(!primeira)primeira={day:bestD,month:bestM,year:bestY};
+const t=document.getElementById(`day-${bestY}-${bestM}-${bestD}`);if(t)t.classList.add('pulsing-highlight');
+break;}
+checkDate.setDate(checkDate.getDate()-1);daysBack++;}
+const card=document.createElement('div');
+card.className=found?'calc-result show':'calc-result show error';
+card.style.animationDelay=`${index*0.1}s`;
+const orig=`${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+if(found){
+const best=`${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
+card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date">${best}</div><div class="result-obs">Sugerido (Igual ou Anterior)</div>`;
+}else{
+card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date" style="font-size:1.2rem;">Sem dados</div><div class="result-obs">Data fora da base configurada.</div>`;}
+container.appendChild(card);
+});
+if(primeira&&fromButton){
+const t=document.getElementById(`day-${primeira.year}-${primeira.month}-${primeira.day}`);
+if(t)t.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+function scrollToCurrentMonth(){
+const el=document.getElementById(`month-container-${new Date().getMonth()}`);
+if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+renderAllMonths();
+renderDateInputs();
+setTimeout(scrollToCurrentMonth,500);
+</script>
 </body>
 </html>
