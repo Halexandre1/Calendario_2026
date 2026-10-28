@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,7 +45,27 @@ h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
 .vencimento-original{font-size:.8rem;}
 .result-date{font-size:1.6rem;font-weight:bold;color:var(--c-pagamento);margin:5px 0;}
 .calc-result.error .result-date{color:var(--c-orcamento);font-size:1.2rem;}
-.result-obs{font-size:.8rem;color:#e0e0e0;}
+.result-obs{font-size:.8rem;color:#e0e0e0;margin-bottom:8px;}
+
+/* NOVO: Estilo para o botão de copiar */
+.btn-copy{
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: 0.3s ease;
+    align-self: center;
+}
+.btn-copy:hover{
+    background: var(--accent);
+    color: #000;
+}
+
 .evt-pagamento{background-color:var(--c-pagamento);color:#fff;}
 .evt-nf-pag{background-color:var(--c-nf-pag);color:#000;font-weight:bold;}
 .evt-ponto{background-color:var(--c-ponto);color:#fff;}
@@ -65,7 +85,7 @@ h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
 <div style="display:flex;flex-direction:column;gap:20px;">
 <div class="panel" id="detailsPanel" style="min-height:80px;display:flex;flex-direction:column;justify-content:center;">
 <div style="font-size:.9rem;color:var(--text-muted);">Evento Selecionado:</div>
-<div id="detailsText" style="font-size:1.2rem;font-weight:bold;margin-top:5px;">Clique em um dia no calendário abaixo</div>
+<div id="detailsText" style="font-size:1.2rem;font-weight:bold;margin-top:5px;">Clique num dia no calendário abaixo</div>
 </div>
 <div class="panel"><div class="calendars-wrapper" id="calendarsWrapper"></div></div>
 </div>
@@ -100,8 +120,6 @@ h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
 <script>
 const NF="evt-nf-pag",PG="evt-pagamento",PT="evt-ponto",JU="evt-justificativa",OR="evt-orcamento",MX="evt-mixed",NJ="evt-nf-just";
 
-// Mantivemos todos os dados de 2026 intactos. 
-// Abaixo deles, incluímos os meses de 2027 com a regra de pagamentos às quintas-feiras.
 const calendarData = {
 "2026-0":{7:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],28:[NF,"Limite Envio NF"],29:[PG,"Pagamento"]},
 "2026-1":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[PT,"Fechamento do Ponto"],18:[NF,"Limite Envio NF"],19:[PG,"Pagamento"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
@@ -115,14 +133,10 @@ const calendarData = {
 "2026-9":{1:[PG,"Pagamento"],5:[OR,"Limite Remanejamento"],6:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[NJ,"Limite Envio NF + Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],29:[PG,"Pagamento"]},
 "2026-10":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],11:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[NF,"Limite Envio NF"],18:[PT,"Fechamento do Ponto"],19:[PG,"Pagamento (e Limite Justificativa)"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
 "2026-11":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],5:["evt-inventario","Inventário Almoxarifado"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],11:["evt-oc","Limite Requisição OC"],15:[NF,"Limite Envio NF"],17:[PG,"Pagamento (e Fechamento do Ponto)"],18:[NJ,"Limite Envio NF + Limite Justificativa"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],30:[PG,"Pagamento"]},
-
-// Adição do Calendário de 2027:
-// Regra aplicada: Todas as quintas-feiras são dias de pagamento.
 "2027-0": { 7: [PG, "Pagamento"], 14: [PG, "Pagamento"], 21: [PG, "Pagamento"], 28: [PG, "Pagamento"] },
 "2027-1": { 4: [PG, "Pagamento"], 11: [PG, "Pagamento"], 18: [PG, "Pagamento"], 25: [PG, "Pagamento"] },
 "2027-2": { 4: [PG, "Pagamento"], 11: [PG, "Pagamento"], 18: [PG, "Pagamento"], 25: [PG, "Pagamento"] },
 "2027-3": { 1: [PG, "Pagamento"], 8: [PG, "Pagamento"], 15: [PG, "Pagamento"], 22: [PG, "Pagamento"], 29: [PG, "Pagamento"] },
-// Em maio de 2027, dia 27 é feriado de Corpus Christi. O pagamento foi antecipado para 26 (quarta-feira).
 "2027-4": { 6: [PG, "Pagamento"], 13: [PG, "Pagamento"], 20: [PG, "Pagamento"], 26: [PG, "Pagamento antecipado (Feriado)"] }, 
 "2027-5": { 3: [PG, "Pagamento"], 10: [PG, "Pagamento"], 17: [PG, "Pagamento"], 24: [PG, "Pagamento"] },
 "2027-6": { 1: [PG, "Pagamento"], 8: [PG, "Pagamento"], 15: [PG, "Pagamento"], 22: [PG, "Pagamento"], 29: [PG, "Pagamento"] },
@@ -134,18 +148,13 @@ const calendarData = {
 };
 
 const monthNames=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-
-// Em vez de um ano fixo, agora utilizamos um Array (lista) de anos para englobar ambos.
 const anosConfigurados = [2026, 2027];
 
 function renderAllMonths(){
   const wrapper=document.getElementById('calendarsWrapper');
   wrapper.innerHTML="";
   
-  // O loop agora percorre todos os anos da lista
   for(let year of anosConfigurados){
-    
-    // Criação de um divisor visual elegante para separar os anos na tela
     const yearHeader = document.createElement('div');
     yearHeader.style.gridColumn = "1 / -1";
     yearHeader.style.textAlign = "center";
@@ -161,12 +170,11 @@ function renderAllMonths(){
     for(let month=0;month<=11;month++){
       const monthDiv=document.createElement('div');
       monthDiv.className='month-container';
-      // Ajuste fundamental: incluímos o ano no ID para o programa não se confundir
       monthDiv.id=`month-container-${year}-${month}`;
       
       const title=document.createElement('h3');
       title.className='month-title';
-      title.innerText=`${monthNames[month]} ${year}`; // Título passa a mostrar o ano também
+      title.innerText=`${monthNames[month]} ${year}`;
       monthDiv.appendChild(title);
       
       const wd=document.createElement('div');
@@ -187,7 +195,6 @@ function renderAllMonths(){
         if(calendarData[key]&&calendarData[key][day])[cssClass,desc]=calendarData[key][day];
         const cell=createCell(cssClass,day);
         
-        // Incluído o ano no ID da célula (day-2026-X vs day-2027-X)
         cell.id=`day-${year}-${month}-${day}`;
         cell.onclick=()=>showDetails(day, `${monthNames[month]} de ${year}`, desc||"Sem eventos", cssClass);
         grid.appendChild(cell);
@@ -223,6 +230,27 @@ function renderDateInputs(){
   calculatePaymentDate(false);
 }
 
+// NOVO: Função para copiar o texto e dar feedback visual no botão
+function copiarData(texto, btn) {
+    navigator.clipboard.writeText(texto).then(() => {
+        // Altera o visual do botão temporariamente para verde
+        btn.innerText = "Copiado!";
+        btn.style.background = "var(--c-pagamento)";
+        btn.style.color = "#fff";
+        btn.style.border = "1px solid var(--c-pagamento)";
+        
+        // Retorna ao estado original após 2 segundos
+        setTimeout(() => {
+            btn.innerText = "Copiar Data";
+            btn.style.background = "";
+            btn.style.color = "";
+            btn.style.border = "";
+        }, 2000);
+    }).catch(err => {
+        console.error('Falha ao copiar: ', err);
+    });
+}
+
 function calculatePaymentDate(fromButton=true){
   const inputs=document.querySelectorAll('.dynamic-date-input');
   const container=document.getElementById('resultsContainer');
@@ -234,14 +262,13 @@ function calculatePaymentDate(fromButton=true){
     const s=input.value;
     if(!s){
       const card=document.createElement('div');card.className='calc-result show';card.style.opacity='0.5';card.style.borderLeftColor='var(--text-muted)';
-      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: --/--/----</span></div><div class="result-date" style="color:var(--text-muted)">--/--</div><div class="result-obs">Aguardando preenchimento...</div>`;
+      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: --/--/----</span></div><div class="result-date" style="color:var(--text-muted)">--/--</div><div class="result-obs">A aguardar preenchimento...</div>`;
       container.appendChild(card);return;
     }
     const [y,m,d]=s.split('-').map(Number);
     let checkDate=new Date(y,m-1,d);
     let found=false,daysBack=0,bestY,bestM,bestD;
     
-    // A lógica de dias anteriores para encontrar uma data de pagamento funciona perfeitamente inter-anos!
     while(daysBack<45){
       const curY=checkDate.getFullYear(),curM=checkDate.getMonth(),curD=checkDate.getDate();
       const key=`${curY}-${curM}`;
@@ -261,7 +288,11 @@ function calculatePaymentDate(fromButton=true){
     
     if(found){
       const best=`${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
-      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date">${best}</div><div class="result-obs">Sugerido (Igual ou Anterior)</div>`;
+      // NOVO: Adicionado o botão chamando a função copiarData() ao final do cartão
+      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div>
+      <div class="result-date">${best}</div>
+      <div class="result-obs">Sugerido (Igual ou Anterior)</div>
+      <button class="btn-copy" onclick="copiarData('${best}', this)">Copiar Data</button>`;
     }else{
       card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date" style="font-size:1.2rem;">Sem dados</div><div class="result-obs">Data fora da base configurada.</div>`;
     }
@@ -276,7 +307,6 @@ function calculatePaymentDate(fromButton=true){
 
 function scrollToCurrentMonth(){
   const dataAtual = new Date();
-  // Busca o elemento baseando-se no mês e ano atuais
   const el=document.getElementById(`month-container-${dataAtual.getFullYear()}-${dataAtual.getMonth()}`);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
