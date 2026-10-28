@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Financeiro 2026 | Flamboyant</title>
+<title>Painel Financeiro 2026 e 2027 | Flamboyant</title>
 <style>
 :root{--bg-body:#0f1115;--bg-panel:#181b21;--text-main:#e0e0e0;--text-muted:#6c757d;--accent:#00d4ff;
 --c-pagamento:#00b050;--c-ponto:#4a004a;--c-nf-mes:#7f7f7f;--c-nf-pag:#fff200;--c-justificativa:#d100b5;--c-orcamento:#ff0055;--c-oc:#1c3c7a;--c-inventario:#5c3a21;}
@@ -60,7 +60,7 @@ h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
 </style>
 </head>
 <body>
-<header><h1>Painel Financeiro - Ano Inteiro 2026</h1></header>
+<header><h1>Painel Financeiro - 2026 e 2027</h1></header>
 <div class="main-grid">
 <div style="display:flex;flex-direction:column;gap:20px;">
 <div class="panel" id="detailsPanel" style="min-height:80px;display:flex;flex-direction:column;justify-content:center;">
@@ -99,6 +99,9 @@ h1{margin:0;font-size:1.5rem;text-transform:uppercase;letter-spacing:2px;}
 </div>
 <script>
 const NF="evt-nf-pag",PG="evt-pagamento",PT="evt-ponto",JU="evt-justificativa",OR="evt-orcamento",MX="evt-mixed",NJ="evt-nf-just";
+
+// Mantivemos todos os dados de 2026 intactos. 
+// Abaixo deles, incluímos os meses de 2027 com a regra de pagamentos às quintas-feiras.
 const calendarData = {
 "2026-0":{7:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],28:[NF,"Limite Envio NF"],29:[PG,"Pagamento"]},
 "2026-1":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[PT,"Fechamento do Ponto"],18:[NF,"Limite Envio NF"],19:[PG,"Pagamento"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
@@ -106,98 +109,178 @@ const calendarData = {
 "2026-3":{6:[OR,"Limite Remanejamento"],8:[NF,"Limite Envio NF"],9:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[NF,"Limite Envio NF"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],29:[NF,"Limite Envio NF"],30:[PG,"Pagamento"]},
 "2026-4":{6:[NF,"Limite Envio NF"],7:[PG,"Pagamento"],13:[NF,"Limite Envio NF"],14:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],25:[MX,"Limite NF Pagamento + Mês"],28:[PG,"Pagamento"]},
 "2026-5":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],16:[NF,"Limite Envio NF"],17:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],22:[JU,"Limite Justificativa"],24:[MX,"Limite NF Pagamento + Mês"],25:[PG,"Pagamento"]},
-// Jul–Dez conferidos com a imagem oficial. Dias com cor dividida envolvendo pagamento => verde.
 "2026-6":{1:[NF,"Limite Envio NF"],2:[PG,"Pagamento"],3:[OR,"Limite Remanejamento"],8:[NF,"Limite Envio NF"],9:[PG,"Pagamento"],15:[NF,"Limite Envio NF"],16:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],22:[NF,"Limite Envio NF"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],29:[NF,"Limite Envio NF"],30:[PG,"Pagamento"]},
 "2026-7":{5:[NF,"Limite Envio NF"],6:[PG,"Pagamento"],12:[NF,"Limite Envio NF"],13:[PG,"Pagamento"],19:[NF,"Limite Envio NF"],20:[PG,"Pagamento (e Fechamento do Ponto)"],21:[JU,"Limite Justificativa"],25:[MX,"Limite NF Pagamento + Mês"],27:[PG,"Pagamento"]},
 "2026-8":{1:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],16:[NF,"Limite Envio NF"],17:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[JU,"Limite Justificativa"],23:[NF,"Limite Envio NF"],24:[PG,"Pagamento"],25:[MX,"Limite NF Pagamento + Mês"]},
 "2026-9":{1:[PG,"Pagamento"],5:[OR,"Limite Remanejamento"],6:[NF,"Limite Envio NF"],8:[PG,"Pagamento"],14:[NF,"Limite Envio NF"],15:[PG,"Pagamento"],20:[PT,"Fechamento do Ponto"],21:[NJ,"Limite Envio NF + Limite Justificativa"],22:[PG,"Pagamento"],23:[MX,"Limite NF Pagamento + Mês"],29:[PG,"Pagamento"]},
 "2026-10":{4:[NF,"Limite Envio NF"],5:[PG,"Pagamento"],11:[NF,"Limite Envio NF"],12:[PG,"Pagamento"],17:[NF,"Limite Envio NF"],18:[PT,"Fechamento do Ponto"],19:[PG,"Pagamento (e Limite Justificativa)"],25:[MX,"Limite NF Pagamento + Mês"],26:[PG,"Pagamento"]},
-"2026-11":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],5:["evt-inventario","Inventário Almoxarifado"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],11:["evt-oc","Limite Requisição OC"],15:[NF,"Limite Envio NF"],17:[PG,"Pagamento (e Fechamento do Ponto)"],18:[NJ,"Limite Envio NF + Limite Justificativa"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],30:[PG,"Pagamento"]}
+"2026-11":{2:[NF,"Limite Envio NF"],3:[PG,"Pagamento"],5:["evt-inventario","Inventário Almoxarifado"],9:[NF,"Limite Envio NF"],10:[PG,"Pagamento"],11:["evt-oc","Limite Requisição OC"],15:[NF,"Limite Envio NF"],17:[PG,"Pagamento (e Fechamento do Ponto)"],18:[NJ,"Limite Envio NF + Limite Justificativa"],23:[PG,"Pagamento"],24:[MX,"Limite NF Pagamento + Mês"],30:[PG,"Pagamento"]},
+
+// Adição do Calendário de 2027:
+// Regra aplicada: Todas as quintas-feiras são dias de pagamento.
+"2027-0": { 7: [PG, "Pagamento"], 14: [PG, "Pagamento"], 21: [PG, "Pagamento"], 28: [PG, "Pagamento"] },
+"2027-1": { 4: [PG, "Pagamento"], 11: [PG, "Pagamento"], 18: [PG, "Pagamento"], 25: [PG, "Pagamento"] },
+"2027-2": { 4: [PG, "Pagamento"], 11: [PG, "Pagamento"], 18: [PG, "Pagamento"], 25: [PG, "Pagamento"] },
+"2027-3": { 1: [PG, "Pagamento"], 8: [PG, "Pagamento"], 15: [PG, "Pagamento"], 22: [PG, "Pagamento"], 29: [PG, "Pagamento"] },
+// Em maio de 2027, dia 27 é feriado de Corpus Christi. O pagamento foi antecipado para 26 (quarta-feira).
+"2027-4": { 6: [PG, "Pagamento"], 13: [PG, "Pagamento"], 20: [PG, "Pagamento"], 26: [PG, "Pagamento antecipado (Feriado)"] }, 
+"2027-5": { 3: [PG, "Pagamento"], 10: [PG, "Pagamento"], 17: [PG, "Pagamento"], 24: [PG, "Pagamento"] },
+"2027-6": { 1: [PG, "Pagamento"], 8: [PG, "Pagamento"], 15: [PG, "Pagamento"], 22: [PG, "Pagamento"], 29: [PG, "Pagamento"] },
+"2027-7": { 5: [PG, "Pagamento"], 12: [PG, "Pagamento"], 19: [PG, "Pagamento"], 26: [PG, "Pagamento"] },
+"2027-8": { 2: [PG, "Pagamento"], 9: [PG, "Pagamento"], 16: [PG, "Pagamento"], 23: [PG, "Pagamento"], 30: [PG, "Pagamento"] },
+"2027-9": { 7: [PG, "Pagamento"], 14: [PG, "Pagamento"], 21: [PG, "Pagamento"], 28: [PG, "Pagamento"] },
+"2027-10": { 4: [PG, "Pagamento"], 11: [PG, "Pagamento"], 18: [PG, "Pagamento"], 25: [PG, "Pagamento"] },
+"2027-11": { 2: [PG, "Pagamento"], 9: [PG, "Pagamento"], 16: [PG, "Pagamento"], 23: [PG, "Pagamento"], 30: [PG, "Pagamento"] }
 };
+
 const monthNames=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const currentYear=2026;
+
+// Em vez de um ano fixo, agora utilizamos um Array (lista) de anos para englobar ambos.
+const anosConfigurados = [2026, 2027];
+
 function renderAllMonths(){
-const wrapper=document.getElementById('calendarsWrapper');wrapper.innerHTML="";
-for(let month=0;month<=11;month++){
-const monthDiv=document.createElement('div');monthDiv.className='month-container';monthDiv.id=`month-container-${month}`;
-const title=document.createElement('h3');title.className='month-title';title.innerText=monthNames[month];monthDiv.appendChild(title);
-const wd=document.createElement('div');wd.className='weekdays';wd.innerHTML='<div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>';monthDiv.appendChild(wd);
-const grid=document.createElement('div');grid.className='days-grid';
-const firstDay=new Date(currentYear,month,1).getDay();
-const daysInMonth=new Date(currentYear,month+1,0).getDate();
-for(let i=0;i<firstDay;i++)grid.appendChild(createCell('empty',''));
-for(let day=1;day<=daysInMonth;day++){
-const key=`${currentYear}-${month}`;let cssClass='',desc='';
-if(calendarData[key]&&calendarData[key][day])[cssClass,desc]=calendarData[key][day];
-const cell=createCell(cssClass,day);cell.id=`day-${currentYear}-${month}-${day}`;
-cell.onclick=()=>showDetails(day,monthNames[month],desc||"Sem eventos",cssClass);
-grid.appendChild(cell);}
-monthDiv.appendChild(grid);wrapper.appendChild(monthDiv);}
+  const wrapper=document.getElementById('calendarsWrapper');
+  wrapper.innerHTML="";
+  
+  // O loop agora percorre todos os anos da lista
+  for(let year of anosConfigurados){
+    
+    // Criação de um divisor visual elegante para separar os anos na tela
+    const yearHeader = document.createElement('div');
+    yearHeader.style.gridColumn = "1 / -1";
+    yearHeader.style.textAlign = "center";
+    yearHeader.style.padding = "10px";
+    yearHeader.style.fontSize = "1.2rem";
+    yearHeader.style.fontWeight = "bold";
+    yearHeader.style.color = "var(--accent)";
+    yearHeader.style.borderBottom = "1px solid var(--accent)";
+    yearHeader.style.marginTop = "10px";
+    yearHeader.innerText = `Calendário de ${year}`;
+    wrapper.appendChild(yearHeader);
+
+    for(let month=0;month<=11;month++){
+      const monthDiv=document.createElement('div');
+      monthDiv.className='month-container';
+      // Ajuste fundamental: incluímos o ano no ID para o programa não se confundir
+      monthDiv.id=`month-container-${year}-${month}`;
+      
+      const title=document.createElement('h3');
+      title.className='month-title';
+      title.innerText=`${monthNames[month]} ${year}`; // Título passa a mostrar o ano também
+      monthDiv.appendChild(title);
+      
+      const wd=document.createElement('div');
+      wd.className='weekdays';
+      wd.innerHTML='<div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>';
+      monthDiv.appendChild(wd);
+      
+      const grid=document.createElement('div');
+      grid.className='days-grid';
+      const firstDay=new Date(year,month,1).getDay();
+      const daysInMonth=new Date(year,month+1,0).getDate();
+      
+      for(let i=0;i<firstDay;i++) grid.appendChild(createCell('empty',''));
+      
+      for(let day=1;day<=daysInMonth;day++){
+        const key=`${year}-${month}`;
+        let cssClass='',desc='';
+        if(calendarData[key]&&calendarData[key][day])[cssClass,desc]=calendarData[key][day];
+        const cell=createCell(cssClass,day);
+        
+        // Incluído o ano no ID da célula (day-2026-X vs day-2027-X)
+        cell.id=`day-${year}-${month}-${day}`;
+        cell.onclick=()=>showDetails(day, `${monthNames[month]} de ${year}`, desc||"Sem eventos", cssClass);
+        grid.appendChild(cell);
+      }
+      monthDiv.appendChild(grid);
+      wrapper.appendChild(monthDiv);
+    }
+  }
 }
+
 function createCell(type,text){const d=document.createElement('div');d.className=`day ${type}`;d.innerText=text;return d;}
+
 function showDetails(day,month,text,cssClass){
-document.getElementById('detailsText').innerText=`${day} de ${month}: ${text}`;
-const panel=document.getElementById('detailsPanel');
-panel.style.borderLeft=cssClass?`4px solid var(--c-${cssClass.replace('evt-','')})`:'4px solid #444';
-if(cssClass==='evt-mixed'||cssClass==='evt-nf-just')panel.style.borderLeft='4px solid #fff';
+  document.getElementById('detailsText').innerText=`${day} de ${month}: ${text}`;
+  const panel=document.getElementById('detailsPanel');
+  panel.style.borderLeft=cssClass?`4px solid var(--c-${cssClass.replace('evt-','')})`:'4px solid #444';
+  if(cssClass==='evt-mixed'||cssClass==='evt-nf-just')panel.style.borderLeft='4px solid #fff';
 }
+
 function renderDateInputs(){
-const qtd=parseInt(document.getElementById('installments').value);
-const container=document.getElementById('dateInputsContainer');
-const values=Array.from(container.querySelectorAll('.dynamic-date-input')).map(i=>i.value);
-container.innerHTML='';
-for(let i=0;i<qtd;i++){
-const div=document.createElement('div');div.className='input-group';div.style.marginBottom='10px';
-const label=document.createElement('label');label.innerText=`Vencimento do Boleto ${i+1}:`;label.style.fontSize='.8rem';
-const input=document.createElement('input');input.type='date';input.className='date-input dynamic-date-input';input.style.padding='8px';
-input.onchange=()=>calculatePaymentDate(false);
-if(values[i])input.value=values[i];
-div.appendChild(label);div.appendChild(input);container.appendChild(div);}
-calculatePaymentDate(false);
+  const qtd=parseInt(document.getElementById('installments').value);
+  const container=document.getElementById('dateInputsContainer');
+  const values=Array.from(container.querySelectorAll('.dynamic-date-input')).map(i=>i.value);
+  container.innerHTML='';
+  for(let i=0;i<qtd;i++){
+    const div=document.createElement('div');div.className='input-group';div.style.marginBottom='10px';
+    const label=document.createElement('label');label.innerText=`Vencimento do Boleto ${i+1}:`;label.style.fontSize='.8rem';
+    const input=document.createElement('input');input.type='date';input.className='date-input dynamic-date-input';input.style.padding='8px';
+    input.onchange=()=>calculatePaymentDate(false);
+    if(values[i])input.value=values[i];
+    div.appendChild(label);div.appendChild(input);container.appendChild(div);
+  }
+  calculatePaymentDate(false);
 }
+
 function calculatePaymentDate(fromButton=true){
-const inputs=document.querySelectorAll('.dynamic-date-input');
-const container=document.getElementById('resultsContainer');
-const qtdBoletos=inputs.length;container.innerHTML='';
-document.querySelectorAll('.pulsing-highlight').forEach(el=>el.classList.remove('pulsing-highlight'));
-let primeira=null;
-inputs.forEach((input,index)=>{
-const s=input.value;
-if(!s){
-const card=document.createElement('div');card.className='calc-result show';card.style.opacity='0.5';card.style.borderLeftColor='var(--text-muted)';
-card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: --/--/----</span></div><div class="result-date" style="color:var(--text-muted)">--/--</div><div class="result-obs">Aguardando preenchimento...</div>`;
-container.appendChild(card);return;}
-const [y,m,d]=s.split('-').map(Number);
-let checkDate=new Date(y,m-1,d);
-let found=false,daysBack=0,bestY,bestM,bestD;
-while(daysBack<45){
-const curY=checkDate.getFullYear(),curM=checkDate.getMonth(),curD=checkDate.getDate();
-const key=`${curY}-${curM}`;
-if(calendarData[key]&&calendarData[key][curD]&&calendarData[key][curD][0]==='evt-pagamento'){
-found=true;bestY=curY;bestM=curM;bestD=curD;
-if(!primeira)primeira={day:bestD,month:bestM,year:bestY};
-const t=document.getElementById(`day-${bestY}-${bestM}-${bestD}`);if(t)t.classList.add('pulsing-highlight');
-break;}
-checkDate.setDate(checkDate.getDate()-1);daysBack++;}
-const card=document.createElement('div');
-card.className=found?'calc-result show':'calc-result show error';
-card.style.animationDelay=`${index*0.1}s`;
-const orig=`${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
-if(found){
-const best=`${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
-card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date">${best}</div><div class="result-obs">Sugerido (Igual ou Anterior)</div>`;
-}else{
-card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date" style="font-size:1.2rem;">Sem dados</div><div class="result-obs">Data fora da base configurada.</div>`;}
-container.appendChild(card);
-});
-if(primeira&&fromButton){
-const t=document.getElementById(`day-${primeira.year}-${primeira.month}-${primeira.day}`);
-if(t)t.scrollIntoView({behavior:'smooth',block:'center'});}
+  const inputs=document.querySelectorAll('.dynamic-date-input');
+  const container=document.getElementById('resultsContainer');
+  const qtdBoletos=inputs.length;container.innerHTML='';
+  document.querySelectorAll('.pulsing-highlight').forEach(el=>el.classList.remove('pulsing-highlight'));
+  let primeira=null;
+  
+  inputs.forEach((input,index)=>{
+    const s=input.value;
+    if(!s){
+      const card=document.createElement('div');card.className='calc-result show';card.style.opacity='0.5';card.style.borderLeftColor='var(--text-muted)';
+      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: --/--/----</span></div><div class="result-date" style="color:var(--text-muted)">--/--</div><div class="result-obs">Aguardando preenchimento...</div>`;
+      container.appendChild(card);return;
+    }
+    const [y,m,d]=s.split('-').map(Number);
+    let checkDate=new Date(y,m-1,d);
+    let found=false,daysBack=0,bestY,bestM,bestD;
+    
+    // A lógica de dias anteriores para encontrar uma data de pagamento funciona perfeitamente inter-anos!
+    while(daysBack<45){
+      const curY=checkDate.getFullYear(),curM=checkDate.getMonth(),curD=checkDate.getDate();
+      const key=`${curY}-${curM}`;
+      if(calendarData[key]&&calendarData[key][curD]&&calendarData[key][curD][0]==='evt-pagamento'){
+        found=true;bestY=curY;bestM=curM;bestD=curD;
+        if(!primeira)primeira={day:bestD,month:bestM,year:bestY};
+        const t=document.getElementById(`day-${bestY}-${bestM}-${bestD}`);if(t)t.classList.add('pulsing-highlight');
+        break;
+      }
+      checkDate.setDate(checkDate.getDate()-1);daysBack++;
+    }
+    
+    const card=document.createElement('div');
+    card.className=found?'calc-result show':'calc-result show error';
+    card.style.animationDelay=`${index*0.1}s`;
+    const orig=`${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+    
+    if(found){
+      const best=`${String(bestD).padStart(2,'0')}/${String(bestM+1).padStart(2,'0')}/${bestY}`;
+      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date">${best}</div><div class="result-obs">Sugerido (Igual ou Anterior)</div>`;
+    }else{
+      card.innerHTML=`<div class="parcela-header"><span class="parcela-numero">Boleto ${index+1} de ${qtdBoletos}</span><span class="vencimento-original">Vence em: ${orig}</span></div><div class="result-date" style="font-size:1.2rem;">Sem dados</div><div class="result-obs">Data fora da base configurada.</div>`;
+    }
+    container.appendChild(card);
+  });
+  
+  if(primeira&&fromButton){
+    const t=document.getElementById(`day-${primeira.year}-${primeira.month}-${primeira.day}`);
+    if(t)t.scrollIntoView({behavior:'smooth',block:'center'});
+  }
 }
+
 function scrollToCurrentMonth(){
-const el=document.getElementById(`month-container-${new Date().getMonth()}`);
-if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  const dataAtual = new Date();
+  // Busca o elemento baseando-se no mês e ano atuais
+  const el=document.getElementById(`month-container-${dataAtual.getFullYear()}-${dataAtual.getMonth()}`);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 renderAllMonths();
 renderDateInputs();
 setTimeout(scrollToCurrentMonth,500);
